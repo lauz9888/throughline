@@ -1,0 +1,12 @@
+{
+  "name": "throughline",
+  "private": true,
+  "scripts": {
+    "test:unit": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3"
+  }
+}
