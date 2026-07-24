@@ -84,21 +84,21 @@ test.describe('home page', () => {
   });
 
   test('serves the PWA manifest and service worker at the expected paths', async ({ request }) => {
-    const manifestResponse = await request.get('/manifest.webmanifest');
+    const manifestResponse = await request.get('./manifest.webmanifest');
     expect(manifestResponse.status()).toBe(200);
 
-    const swResponse = await request.get('/sw.js');
+    const swResponse = await request.get('./sw.js');
     expect(swResponse.status()).toBe(200);
   });
 
   test('serves a favicon/PWA icon derived from the wordmark, matching the manifest icon entry', async ({
     request,
   }) => {
-    const iconResponse = await request.get('/icon.svg');
+    const iconResponse = await request.get('./icon.svg');
     expect(iconResponse.status()).toBe(200);
     expect(iconResponse.headers()['content-type']).toContain('image/svg+xml');
 
-    const manifestResponse = await request.get('/manifest.webmanifest');
+    const manifestResponse = await request.get('./manifest.webmanifest');
     const manifest = await manifestResponse.json();
 
     expect(manifest.icons[0].src).toContain('icon.svg');
