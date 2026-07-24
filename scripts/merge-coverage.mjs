@@ -42,7 +42,23 @@ function readCoverageFinal(dir) {
   if (!fs.existsSync(file)) {
     return null;
   }
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
+  return normalizeCoverageKeys(JSON.parse(fs.readFileSync(file, 'utf8')));
+}
+
+// Different producers in this pipeline resolve file paths differently on
+// Windows (native fs-based tools like Vitest/nyc use backslashes; ts-node's
+// module-resolution-based paths use forward slashes). istanbul-lib-coverage
+// keys its map by the exact path string, so without normalizing to one
+// separator style first, the same physical file merges as two separate
+// entries instead of one — silently double-counting its statement total in
+// the combined report instead of unioning per-statement hit counts.
+function normalizeCoverageKeys(data) {
+  const normalized = {};
+  for (const [filePath, fileCoverage] of Object.entries(data)) {
+    const key = filePath.split(path.win32.sep).join(path.posix.sep);
+    normalized[key] = { ...fileCoverage, path: key };
+  }
+  return normalized;
 }
 
 // 1. Clean stale output.

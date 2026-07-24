@@ -31,6 +31,17 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['json', 'text-summary'],
       reportsDirectory: 'coverage/unit',
+      // Scope this layer's coverage to actual application source. Without an
+      // explicit include, v8's coverage provider sweeps in every project
+      // file it can see that isn't excluded by Vitest's defaults (config
+      // files like playwright.config.ts/cucumber.cjs, scripts/*, and the
+      // BDD layer's own features/**/*.ts) as unexecuted 0%-covered "source,"
+      // which both dilutes the combined percentage and — because those same
+      // files are reported by the BDD/e2e layers under differently-cased
+      // path separators — produces duplicate, un-mergeable entries for the
+      // same file in the combined report.
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.test.ts'],
     },
   },
 });

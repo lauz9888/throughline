@@ -1,12 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// NOTE (e2e-test-author scaffold): this config intentionally omits the
-// coverage-fixture/global-teardown "browser coverage collection" wiring
-// described in design.md's Coverage merge design section (Requirement 11,
-// `test:coverage:merge`) — that plumbing is a later pipeline step. This file
-// covers what's needed to run `npm run test:e2e` (Requirement 10) and the
-// home.spec.ts assertions (Requirements 1-6, 12, 14, 15) per design.md's
-// "Test impact" > E2E section.
+// Drives both `npm run test:e2e` (Requirement 10, home.spec.ts's assertions
+// for Requirements 1-6, 12, 14, 15) and, via `globalTeardown` below, the e2e
+// leg of `npm run test:coverage:merge` (Requirement 11) — see design.md's
+// "Coverage merge design" section. `globalTeardown` no-ops unless
+// `COVERAGE=true`, so normal `test:e2e` runs are unaffected.
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
