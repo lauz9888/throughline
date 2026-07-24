@@ -61,6 +61,28 @@ test.describe('home page', () => {
     expect(styles.color).toBe('rgb(26, 26, 26)');
   });
 
+  test('strikes through the wordmark with a coloured line on hover', async ({ page }) => {
+    await page.goto('/');
+
+    const heading = page.getByRole('heading', { name: 'throughline' });
+
+    const before = await heading.evaluate((el) => getComputedStyle(el).textDecorationLine);
+    expect(before).toBe('none');
+
+    await heading.hover();
+
+    const styles = await heading.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return {
+        textDecorationLine: computed.textDecorationLine,
+        textDecorationColor: computed.textDecorationColor,
+      };
+    });
+
+    expect(styles.textDecorationLine).toContain('line-through');
+    expect(styles.textDecorationColor).not.toBe('rgb(26, 26, 26)');
+  });
+
   test('serves the PWA manifest and service worker at the expected paths', async ({ request }) => {
     const manifestResponse = await request.get('/manifest.webmanifest');
     expect(manifestResponse.status()).toBe(200);

@@ -15,4 +15,15 @@ body {
   color: #1a1a1a;
   margin: 0;
   padding: 1.5rem 0 0 1.5rem;
+  text-decoration-line: none;
+  text-decoration-color: #8a6d3b; /* muted gold accent */
+  /* stylelint-disable-next-line property-no-vendor-prefix -- Safari < 15.4 fallback for text-decoration-color */
+  -webkit-text-decoration-color: #8a6d3b;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.1em;
+  transition: text-decoration-line 0.15s ease;
+}
+
+.wordmark:hover {
+  text-decoration-line: line-through;
 }
