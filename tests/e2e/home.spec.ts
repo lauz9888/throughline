@@ -2,13 +2,13 @@ import { test, expect } from './coverage-fixture';
 
 test.describe('home page', () => {
   test('has the title "throughline"', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
 
     await expect(page).toHaveTitle('throughline');
   });
 
   test('has a solid white background', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
 
     const backgroundColor = await page.evaluate(
       () => getComputedStyle(document.body).backgroundColor
@@ -27,7 +27,7 @@ test.describe('home page', () => {
 
     for (const viewport of viewports) {
       await page.setViewportSize(viewport);
-      await page.goto('/');
+      await page.goto('./');
 
       const heading = page.getByRole('heading', { name: 'throughline' });
       await expect(heading).toBeVisible();
@@ -42,7 +42,7 @@ test.describe('home page', () => {
   test('renders the wordmark with the deliberate serif/weight/letter-spacing/color treatment', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto('./');
 
     const heading = page.getByRole('heading', { name: 'throughline' });
     const styles = await heading.evaluate((el) => {
@@ -62,7 +62,7 @@ test.describe('home page', () => {
   });
 
   test('strikes through the wordmark with a coloured line on hover', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
 
     const heading = page.getByRole('heading', { name: 'throughline' });
 
@@ -118,7 +118,7 @@ test.describe('home page', () => {
       failedRequests.push(req.url());
     });
 
-    await page.goto('/');
+    await page.goto('./');
 
     expect(consoleErrors).toEqual([]);
     expect(failedRequests).toEqual([]);
