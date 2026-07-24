@@ -1,0 +1,18 @@
+@import '@fontsource/playfair-display/700.css';
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+
+.wordmark {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: 1.75rem;
+  letter-spacing: 0.04em;
+  color: #1a1a1a;
+  margin: 0;
+  padding: 1.5rem 0 0 1.5rem;
+}

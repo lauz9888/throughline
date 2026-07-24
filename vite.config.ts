@@ -1,13 +1,29 @@
 import { defineConfig } from 'vitest/config';
+import { VitePWA } from 'vite-plugin-pwa';
+import { getBasePath } from './src/base-path';
 
-// NOTE (test-author scaffold stub): this file currently only carries the
-// Vitest `test` field needed to run src/app.test.ts and src/base-path.test.ts.
-// Per design.md, the full vite.config.ts also needs `base: getBasePath(...)`
-// (from src/base-path.ts) and the `plugins: [VitePWA({...})]` / `build.sourcemap`
-// settings — left out here because those depend on src/base-path.ts and the
-// vite-plugin-pwa/@fontsource packages, which are the implementer's (Step 8)
-// responsibility to add, not this test-authoring step's.
 export default defineConfig({
+  base: getBasePath(process.env),
+  plugins: [
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'throughline',
+        short_name: 'throughline',
+        description: 'throughline',
+        start_url: '.',
+        scope: '.',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#ffffff',
+        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+      },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'] },
+    }),
+  ],
+  build: {
+    sourcemap: process.env.COVERAGE === 'true',
+  },
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.ts'],

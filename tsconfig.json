@@ -6,7 +6,8 @@
     "strict": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
-    "noEmit": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
   "include": ["src", "vite.config.ts", "playwright.config.ts", "features/**/*.ts", "tests/e2e/**/*.ts"],
   "ts-node": {
