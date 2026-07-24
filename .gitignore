@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.workflow/
+coverage/
+.nyc_output/
+playwright-report/
+test-results/

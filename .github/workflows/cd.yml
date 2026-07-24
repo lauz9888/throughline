@@ -1,0 +1,103 @@
+name: CD
+
+# Pipeline step 16: on merge to main — production build & deploy to GitHub Pages,
+# post-deploy smoke check, PWA-specific checks, then e2e tests against the live deployment.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # GITHUB_PAGES=true tells vite.config.* to use the /<repo>/ base path a
+      # GitHub Pages project site needs; local dev/build/preview are unaffected.
+      - run: npm run build
+        env:
+          GITHUB_PAGES: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke-check:
+    name: Post-deploy smoke check
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the live site responds
+        run: |
+          url="${{ needs.deploy.outputs.page_url }}"
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+          if [ "$status" != "200" ]; then
+            echo "Expected HTTP 200 from $url, got $status"
+            exit 1
+          fi
+          body=$(curl -s "$url")
+          if [ -z "$body" ]; then
+            echo "Live page at $url returned an empty body"
+            exit 1
+          fi
+          echo "Smoke check passed: $url responded 200 with content."
+
+  pwa-check:
+    name: PWA validation (live)
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check manifest and service worker are served
+        run: |
+          url="${{ needs.deploy.outputs.page_url }}"
+          # Adjust these paths if the PWA plugin used generates different filenames.
+          for path in manifest.webmanifest sw.js; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "${url%/}/$path")
+            if [ "$status" != "200" ]; then
+              echo "Expected ${url%/}/$path to return 200, got $status"
+              exit 1
+            fi
+          done
+          echo "PWA validation passed: manifest and service worker are both served."
+
+  e2e-live:
+    name: E2E tests (live deployment)
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          BASE_URL: ${{ needs.deploy.outputs.page_url }}
