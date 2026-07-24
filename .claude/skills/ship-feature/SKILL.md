@@ -115,7 +115,7 @@ These run in GitHub Actions (`.github/workflows/ci.yml` on push/PR, `.github/wor
 
 On any CI job failure: `gh issue create --label ci --title "<slug>: CI failure — <job name>" --body "<job output>\n\nRelated to #<tracking-issue>"`, spawn/`SendMessage` `Agent(subagent_type="bug-fixer")` with the job output and which local command reproduces it (map job→command: lint→`npm run lint`, typecheck→`npm run typecheck`, build→`npm run build`, unit→`npm run test:unit`, bdd→`npm run test:bdd`), push the fix, re-watch CI, close the issue once green. Cap at 5 cycles.
 
-Once all CI jobs are green: `gh pr merge <pr-number> --squash --delete-branch`. Note this performs both the merge (triggering CD) and remote branch deletion in one step.
+Once all CI jobs are green: `gh pr merge <pr-number> --squash --delete-branch`. This performs the merge (triggering CD) and deletes the remote branch — and if the current checkout is on `feature/<slug>`, `gh` also switches it back to `main` and deletes the local branch as part of the same command. So by Step 21, local cleanup is very often already done; treat it as the expected common case, not an edge case.
 
 ## Step 18 — CD failure logging (no auto-fix)
 
@@ -131,6 +131,10 @@ Spawn `Agent(subagent_type="report-generator")` with the full `.workflow/<slug>/
 
 ## Step 21 — Cleanup
 
-The remote branch was already deleted by Step 17's `gh pr merge --delete-branch`. Delete the local branch: `git checkout main && git branch -d feature/<slug>`. Mark `state.md` complete. `main` should now be the only branch.
+The remote branch was already deleted by Step 17's `gh pr merge --delete-branch`, and — per that step's note — the local branch is very often already gone too (`gh` deletes it and switches you back to `main` automatically if it was checked out during the merge). Check before acting rather than assuming either outcome:
+
+1. `git branch --list feature/<slug>`. If it's empty, the local branch is already cleaned up — just confirm you're on `main` (`git checkout main` is a safe no-op if already there) and skip straight to step 3.
+2. If it still exists (e.g. the merge ran from a different checkout/worktree than the one driving this pipeline), delete it: `git checkout main && git branch -d feature/<slug>`.
+3. Mark `state.md` complete. `main` should now be the only branch.
 
 Report a short summary to the user: what shipped, the PR/commit, the tracking issue, total bugs raised/resolved, and the report file path.
