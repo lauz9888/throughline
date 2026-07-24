@@ -1,6 +1,8 @@
 # throughline
 
-A Vite-built Progressive Web App, deployed to GitHub Pages.
+A Vite-built Progressive Web App, deployed to GitHub Pages: https://lauz9888.github.io/throughline/
+
+Currently a scaffold: a blank white page with a "throughline" wordmark (self-hosted Playfair Display) at the top left, a hand-authored SVG favicon/app icon, and PWA support (`manifest.webmanifest`, `sw.js`) via `vite-plugin-pwa`.
 
 ## Development
 
@@ -8,12 +10,20 @@ A Vite-built Progressive Web App, deployed to GitHub Pages.
 npm run dev
 ```
 
+Build and preview a production build locally:
+
+```
+npm run build
+npm run preview
+```
+
 Tests:
 
 ```
-npm run test:unit    # Vitest
-npm run test:bdd     # Cucumber.js
-npm run test:e2e     # Playwright
+npm run test:unit             # Vitest
+npm run test:bdd              # Cucumber.js
+npm run test:e2e              # Playwright (reads BASE_URL to run against a live deployment)
+npm run test:coverage:merge   # combined coverage across all three suites
 ```
 
 ## Workflow
