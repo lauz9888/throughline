@@ -1,12 +1,4 @@
-import { test, expect } from '@playwright/test';
-
-// NOTE (e2e-test-author scaffold): imports `test`/`expect` directly from
-// `@playwright/test` rather than a `coverage-fixture` module. design.md
-// describes a `tests/e2e/coverage-fixture.ts` wrapper used to collect
-// per-test browser coverage for `test:coverage:merge` (Requirement 11) — that
-// plumbing is a later pipeline step, not needed for this spec's assertions
-// (Requirements 1-6, 12, 14, 15) to be meaningful. When the coverage-fixture
-// module is added, this file's import should switch to it.
+import { test, expect } from './coverage-fixture';
 
 test.describe('home page', () => {
   test('has the title "throughline"', async ({ page }) => {

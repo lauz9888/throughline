@@ -1,0 +1,10 @@
+{
+  "extension": [".ts"],
+  "require": ["ts-node/register"],
+  "include": ["src/**/*.ts", "features/step_definitions/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "**/*.d.ts"],
+  "sourceMap": true,
+  "instrument": true,
+  "all": false,
+  "reporter": ["json"]
+}
