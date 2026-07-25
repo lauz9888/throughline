@@ -76,7 +76,10 @@ function getEditField(world: World, fieldName: string): HTMLInputElement | HTMLT
 function getEditLinkRadio(world: World, label: string): HTMLInputElement {
   const id = label === 'Goals' ? 'edit-aspiration-link-goals' : 'edit-aspiration-link-habits';
   const radio = world.document.getElementById(id);
-  assert.ok(radio, `expected the "${label}" link radio button to exist in the edit aspiration modal`);
+  assert.ok(
+    radio,
+    `expected the "${label}" link radio button to exist in the edit aspiration modal`,
+  );
   return radio as HTMLInputElement;
 }
 
@@ -150,9 +153,10 @@ Given('the following aspirations are stored:', function (this: World, dataTable:
     title: row.title ?? '',
     description: row.description ?? '',
     reason: row.reason ?? '',
-    createdAt: row.createdAt && row.createdAt.length > 0
-      ? row.createdAt
-      : new Date(BASE_TIME + index).toISOString(),
+    createdAt:
+      row.createdAt && row.createdAt.length > 0
+        ? row.createdAt
+        : new Date(BASE_TIME + index).toISOString(),
   }));
   lastSeededAspirations = records;
   this.dom.window.localStorage.setItem(ASPIRATIONS_STORAGE_KEY, JSON.stringify(records));
@@ -160,12 +164,15 @@ Given('the following aspirations are stored:', function (this: World, dataTable:
 
 // --- Grid ---
 
-Then('the aspiration grid shows the empty-state message {string}', function (this: World, expected: string) {
-  const section = getGridSection(this);
-  const message = section.querySelector('.aspiration-grid__empty');
-  assert.ok(message, 'expected the empty-state message element to exist');
-  assert.equal(message!.textContent, expected);
-});
+Then(
+  'the aspiration grid shows the empty-state message {string}',
+  function (this: World, expected: string) {
+    const section = getGridSection(this);
+    const message = section.querySelector('.aspiration-grid__empty');
+    assert.ok(message, 'expected the empty-state message element to exist');
+    assert.equal(message!.textContent, expected);
+  },
+);
 
 Then('the aspiration grid contains no tiles', function (this: World) {
   assert.equal(getTiles(this).length, 0);
@@ -311,7 +318,11 @@ Then(
   function (this: World) {
     const stored = readStoredAspirations(this);
     assert.equal(stored.length, 1, 'expected exactly one stored aspiration');
-    assert.equal(lastSeededAspirations.length, 1, 'expected exactly one previously-seeded aspiration');
+    assert.equal(
+      lastSeededAspirations.length,
+      1,
+      'expected exactly one previously-seeded aspiration',
+    );
     assert.equal(stored[0]!.id, lastSeededAspirations[0]!.id);
     assert.equal(stored[0]!.createdAt, lastSeededAspirations[0]!.createdAt);
   },

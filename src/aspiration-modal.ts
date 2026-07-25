@@ -1,13 +1,17 @@
 import { createFocusTrap } from './focus-trap';
 import { saveAspiration } from './aspiration-storage';
-import { BLURB_TEXT, buildAspirationFields, type AspirationFieldsResult } from './aspiration-fields';
+import {
+  BLURB_TEXT,
+  buildAspirationFields,
+  type AspirationFieldsResult,
+} from './aspiration-fields';
 import { openConfirmDialog } from './confirm-dialog';
 
 export interface AspirationModalElements {
   root: HTMLElement; // the #app element; toggled `inert` while a dialog is open
   addItemButton: HTMLButtonElement; // focus-return target (Requirement 31)
   onSave?: () => void; // called once, immediately after a successful save, before
-                        // `closeAndTeardown()` runs (Issue #74)
+  // `closeAndTeardown()` runs (Issue #74)
 }
 
 export function initAspirationModal(elements: AspirationModalElements): {

@@ -1,6 +1,10 @@
 import { createFocusTrap } from './focus-trap';
 import { updateAspiration, deleteAspiration, type Aspiration } from './aspiration-storage';
-import { BLURB_TEXT, buildAspirationFields, type AspirationFieldsResult } from './aspiration-fields';
+import {
+  BLURB_TEXT,
+  buildAspirationFields,
+  type AspirationFieldsResult,
+} from './aspiration-fields';
 import { openConfirmDialog } from './confirm-dialog';
 
 export interface EditAspirationModalElements {

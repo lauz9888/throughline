@@ -120,9 +120,7 @@ describe('buildAspirationFields', () => {
     result.descriptionIcon.click();
 
     expect(result.titleTooltip.classList.contains('modal__tooltip-text--visible')).toBe(false);
-    expect(result.descriptionTooltip.classList.contains('modal__tooltip-text--visible')).toBe(
-      true,
-    );
+    expect(result.descriptionTooltip.classList.contains('modal__tooltip-text--visible')).toBe(true);
     expect(result.isTooltipOpen()).toBe(true);
   });
 

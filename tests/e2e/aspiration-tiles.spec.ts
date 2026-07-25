@@ -111,7 +111,7 @@ test.describe('aspiration tile grid', () => {
     await expect(page.locator('.aspiration-tile')).toHaveCount(0);
   });
 
-  test('clicking a tile opens Edit Aspiration pre-populated with that aspiration\'s data', async ({
+  test("clicking a tile opens Edit Aspiration pre-populated with that aspiration's data", async ({
     page,
   }) => {
     await seedAspirations(page, [
@@ -247,7 +247,7 @@ test.describe('aspiration tile grid', () => {
     expect(await readStoredAspirations(page)).toHaveLength(1);
   });
 
-  test('after a confirmed delete, focus moves to the tile grid\'s section container', async ({
+  test("after a confirmed delete, focus moves to the tile grid's section container", async ({
     page,
   }) => {
     await seedAspirations(page, [{ title: 'Delete focus target' }]);
@@ -255,7 +255,10 @@ test.describe('aspiration tile grid', () => {
 
     const dialog = editDialog(page);
     await dialog.getByRole('button', { name: /delete/i }).click();
-    await page.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }).click();
+    await page
+      .getByRole('alertdialog')
+      .getByRole('button', { name: 'Delete', exact: true })
+      .click();
 
     await expect(page.getByRole('region', { name: 'Your aspirations' })).toBeFocused();
   });

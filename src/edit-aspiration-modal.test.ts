@@ -130,9 +130,7 @@ describe('initEditAspirationModal', () => {
     const descriptionInput = dialog.querySelector<HTMLTextAreaElement>(
       'textarea[id$="field-description"]',
     )!;
-    const reasonInput = dialog.querySelector<HTMLTextAreaElement>(
-      'textarea[id$="field-reason"]',
-    )!;
+    const reasonInput = dialog.querySelector<HTMLTextAreaElement>('textarea[id$="field-reason"]')!;
     const goalsRadio = dialog.querySelector<HTMLInputElement>('input[id$="link-goals"]')!;
     const habitsRadio = dialog.querySelector<HTMLInputElement>('input[id$="link-habits"]')!;
 
@@ -248,7 +246,10 @@ describe('initEditAspirationModal', () => {
     openWithTile(modal, gridContainer, aspiration);
 
     const dialog = getDialog();
-    setValue(dialog.querySelector<HTMLInputElement>('input[id$="field-title"]')!, '  Updated title  ');
+    setValue(
+      dialog.querySelector<HTMLInputElement>('input[id$="field-title"]')!,
+      '  Updated title  ',
+    );
     setValue(
       dialog.querySelector<HTMLTextAreaElement>('textarea[id$="field-description"]')!,
       '  Updated description  ',
@@ -333,7 +334,9 @@ describe('initEditAspirationModal', () => {
     expect(document.querySelector('[role="alertdialog"]')).toBeNull();
     expect(document.querySelector('[role="dialog"]')).toBeNull();
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(readAspirations(window.localStorage).find((a) => a.id === aspiration.id)).toBeUndefined();
+    expect(
+      readAspirations(window.localStorage).find((a) => a.id === aspiration.id),
+    ).toBeUndefined();
     expect(document.activeElement).toBe(gridContainer);
   });
 
@@ -462,7 +465,7 @@ describe('initEditAspirationModal', () => {
     expect(document.querySelector('[role="alertdialog"]')).toBeNull();
   });
 
-  it("traps focus through the new Delete button: Tab from Save reaches Delete, then wraps to close; Shift+Tab from close wraps back to Delete (Issue #79)", () => {
+  it('traps focus through the new Delete button: Tab from Save reaches Delete, then wraps to close; Shift+Tab from close wraps back to Delete (Issue #79)', () => {
     const aspiration = makeAspiration();
     seedStorage(aspiration);
     const { gridContainer, modal } = setup();
