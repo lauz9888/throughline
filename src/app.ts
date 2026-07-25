@@ -1,11 +1,14 @@
 import { initAddItemMenu } from './add-item-menu';
+import { initAspirationModal } from './aspiration-modal';
 
 export const ADD_ITEM_TYPES = ['Aspiration', 'Goal', 'Milestone', 'Task', 'Habit'] as const;
 
 let cleanupAddItemMenu: (() => void) | undefined;
+let cleanupAspirationModal: (() => void) | undefined;
 
 export function renderApp(root: HTMLElement): HTMLElement {
   cleanupAddItemMenu?.();
+  cleanupAspirationModal?.();
 
   const doc = root.ownerDocument;
 
@@ -48,7 +51,19 @@ export function renderApp(root: HTMLElement): HTMLElement {
 
   root.replaceChildren(topBar);
 
-  cleanupAddItemMenu = initAddItemMenu({ button, menu });
+  const { open: openAspirationModal, destroy: destroyAspirationModal } = initAspirationModal({
+    root,
+    addItemButton: button,
+  });
+  cleanupAspirationModal = destroyAspirationModal;
+
+  cleanupAddItemMenu = initAddItemMenu({
+    button,
+    menu,
+    onItemSelect: (label) => {
+      if (label === 'Aspiration') openAspirationModal();
+    },
+  });
 
   return wordmark;
 }

@@ -1,9 +1,10 @@
 export interface AddItemMenuElements {
   button: HTMLButtonElement;
   menu: HTMLElement;
+  onItemSelect?: (label: string) => void;
 }
 
-export function initAddItemMenu({ button, menu }: AddItemMenuElements): () => void {
+export function initAddItemMenu({ button, menu, onItemSelect }: AddItemMenuElements): () => void {
   const doc = button.ownerDocument;
   const menuItems = Array.from(menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
 
@@ -21,8 +22,10 @@ export function initAddItemMenu({ button, menu }: AddItemMenuElements): () => vo
     setOpen(!isOpen());
   }
 
-  function handleItemClick(): void {
+  function handleItemClick(event: MouseEvent): void {
     setOpen(false, { refocusButton: true });
+    const item = event.currentTarget as HTMLButtonElement;
+    onItemSelect?.(item.textContent ?? '');
   }
 
   function handleDocumentClick(event: MouseEvent): void {

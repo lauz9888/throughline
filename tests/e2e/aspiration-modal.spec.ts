@@ -113,6 +113,13 @@ test.describe('create aspiration modal', () => {
     await page.goto('./');
     await openAspirationModal(page);
 
+    // Save is natively `disabled` (Requirement 23/41) until Title has content, and a
+    // disabled button is never a Tab stop in any browser — so it must be enabled here for
+    // this test to be able to reach it via the keyboard at all, matching the same
+    // enable-before-testing-the-trap-boundary pattern already used for this exact scenario
+    // at the unit layer (see `src/aspiration-modal.test.ts`'s "traps focus" test).
+    await page.getByLabel('Title', { exact: true }).fill('Non-empty title');
+
     // Focus starts on Title. Tab forward through Description, Reason, and
     // the Goals radio (the only tab stop in the Goals/Habits group while
     // neither is checked yet), landing on Save.
