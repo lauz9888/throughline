@@ -1,11 +1,7 @@
 import { When, Then } from '@cucumber/cucumber';
 import { strict as assert } from 'assert';
 import { World } from '../support/world';
-
-// Matches `src/aspiration-storage.ts`'s `ASPIRATIONS_STORAGE_KEY` (that module doesn't exist
-// yet, so the constant is duplicated here rather than imported — importing a nonexistent module
-// at require-time would abort the whole Cucumber run, including unrelated feature files).
-const ASPIRATIONS_STORAGE_KEY = 'throughline:aspirations';
+import { ASPIRATIONS_STORAGE_KEY } from '../../src/aspiration-storage';
 
 const FIELD_IDS: Record<string, string> = {
   Title: 'aspiration-field-title',
