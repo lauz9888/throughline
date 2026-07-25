@@ -14,7 +14,7 @@ body {
   letter-spacing: 0.04em;
   color: #1a1a1a;
   margin: 0;
-  padding: 1.5rem 0 0 1.5rem;
+  padding: 0;
   text-decoration-line: none;
   text-decoration-color: #8a6d3b; /* muted gold accent */
   /* stylelint-disable-next-line property-no-vendor-prefix -- Safari < 15.4 fallback for text-decoration-color */
@@ -26,4 +26,97 @@ body {
 
 .wordmark:hover {
   text-decoration-line: line-through;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.add-item {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.add-item-button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: #8a6d3b;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.add-item-button:hover {
+  background: #6f5730;
+}
+
+.add-item-button:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}
+
+.add-item-button::before,
+.add-item-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: #ffffff;
+  border-radius: 1px;
+  transform: translate(-50%, -50%);
+}
+
+.add-item-button::before {
+  width: 18px;
+  height: 2px;
+}
+
+.add-item-button::after {
+  width: 2px;
+  height: 18px;
+}
+
+.add-item-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0.5rem 0;
+  min-width: 160px;
+  background: #ffffff;
+  border: 1px solid #8a6d3b;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.15);
+}
+
+.add-item-menu[hidden] {
+  display: none;
+}
+
+.add-item-menu__item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 1rem;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.add-item-menu__item:hover,
+.add-item-menu__item:focus-visible {
+  background: #f4ede0;
 }
