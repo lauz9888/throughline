@@ -2,7 +2,7 @@
 
 A Vite-built Progressive Web App, deployed to GitHub Pages: https://lauz9888.github.io/throughline/
 
-Currently a scaffold: a blank white page with a "throughline" wordmark (self-hosted Playfair Display) at the top left, a hand-authored SVG favicon/app icon, and PWA support (`manifest.webmanifest`, `sw.js`) via `vite-plugin-pwa`.
+Currently a scaffold: a top bar with the "throughline" wordmark (self-hosted Playfair Display) on the left and a gold/white/near-black "add item" button on the right — the button opens a dropdown of item types to create (Aspiration, Goal, Milestone, Task, Habit), though selecting one doesn't do anything yet — plus a hand-authored SVG favicon/app icon and PWA support (`manifest.webmanifest`, `sw.js`) via `vite-plugin-pwa`.
 
 ## Development
 
