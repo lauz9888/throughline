@@ -70,7 +70,7 @@ describe('renderApp', () => {
     expect(items.map((item) => item.textContent)).toEqual([...ADD_ITEM_TYPES]);
   });
 
-  it('does not leak the previous render\'s document-level listeners when called again (listener-leak regression)', () => {
+  it("does not leak the previous render's document-level listeners when called again (listener-leak regression)", () => {
     const root = document.createElement('div');
 
     renderApp(root);

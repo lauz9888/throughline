@@ -70,3 +70,73 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:bdd
+
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+
+  e2e-tests:
+    name: E2E tests (local build/preview)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run test:e2e
+      # No BASE_URL set: playwright.config.ts's webServer block builds and
+      # previews the app locally (port 4173) instead of hitting a live
+      # deployment. `pretest:e2e` (package.json) installs the Chromium
+      # browser automatically before this runs.
+
+  coverage-merge:
+    name: Combined coverage (>=90%, see .claude/STANDARDS.md)
+    runs-on: ubuntu-latest
+    env:
+      # Mirrors the threshold documented in .claude/STANDARDS.md — update
+      # both together if this ever changes.
+      COVERAGE_THRESHOLD: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # scripts/merge-coverage.mjs invokes `npx playwright test` directly
+      # (not via `npm run test:e2e`), which bypasses the `pretest:e2e` npm
+      # lifecycle hook — the browser must be installed explicitly here.
+      - run: npx playwright install --with-deps chromium
+      - name: Run combined coverage and enforce threshold
+        run: |
+          npm run test:coverage:merge | tee coverage-output.txt
+          pct=$(grep -oE 'Combined coverage: [0-9.]+' coverage-output.txt | grep -oE '[0-9.]+')
+          if [ -z "$pct" ]; then
+            echo "Could not parse combined coverage percentage from test:coverage:merge output"
+            exit 1
+          fi
+          echo "Combined coverage: ${pct}% (threshold: ${COVERAGE_THRESHOLD}%)"
+          awk -v pct="$pct" -v threshold="$COVERAGE_THRESHOLD" \
+            'BEGIN { exit (pct+0 < threshold+0) ? 1 : 0 }'
