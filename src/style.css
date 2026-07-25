@@ -120,3 +120,286 @@ body {
 .add-item-menu__item:focus-visible {
   background: #f4ede0;
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal {
+  position: relative;
+  /* Light pastel purple, scoped to the Aspiration modal only (rest of the app keeps the
+     white/#1a1a1a/#8a6d3b palette). #1a1a1a text on this background is ~14.2:1, comfortably
+     over the 4.5:1 AA minimum for normal text. */
+  background: #efe4fb;
+  border: 1px solid #8a6d3b;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.15);
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.modal--confirm {
+  max-width: 400px;
+}
+
+.modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: #1a1a1a;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__close:hover {
+  background: #f4ede0;
+}
+
+.modal__title {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: 1.375rem;
+  color: #1a1a1a;
+  margin: 0 0 0.75rem;
+}
+
+.modal__blurb {
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: #1a1a1a;
+  margin: 0 0 1.25rem;
+}
+
+.modal__field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 0 1rem;
+}
+
+.modal__field-label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.modal__field label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.modal__field input[type='text'],
+.modal__field textarea {
+  font: inherit;
+  font-size: 1.0625rem;
+  color: #1a1a1a;
+  border: 1px solid #8a6d3b;
+  border-radius: 6px;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.aspiration-modal__links {
+  position: relative;
+  border: 1px solid #8a6d3b;
+  border-radius: 6px;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.aspiration-modal__links legend {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #1a1a1a;
+  padding: 0 0.25rem;
+}
+
+.aspiration-modal__link-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+}
+
+.aspiration-modal__links-empty {
+  font-size: 0.9375rem;
+  color: #1a1a1a;
+  margin: 0.5rem 0 0;
+}
+
+.aspiration-modal__links-empty[hidden] {
+  display: none;
+}
+
+/* Tooltip / field-description affordance (readability item 2). The info icon is a real,
+   focusable, keyboard-operable button (own accessible name via aria-label, e.g. "More
+   information about Title") that toggles the visibility of its associated tooltip text on
+   click/Enter/Space — see the click-to-toggle wiring in src/aspiration-modal.ts. The glyph
+   itself is still drawn via ::before purely for visual decoration. Regardless of the toggle's
+   visual state, the real accessible description is the field's `aria-describedby` target below,
+   which stays in the accessibility tree at all times. */
+.modal__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 1.5px solid #5a2d8c;
+  background: none;
+  color: #5a2d8c;
+  font: inherit;
+  font-size: 0.6875rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__info::before {
+  content: 'i';
+  font-style: italic;
+  font-weight: 700;
+}
+
+/* Anchors the Links fieldset's tooltip text to sit right under its info icon (inside the
+   <legend>, since <legend> must be a fieldset's first child and can't be wrapped) rather than
+   under the whole fieldset. */
+.modal__info-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.modal__tooltip-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Revealed as a floating overlay (not pushed into normal flow) so that toggling it never
+   shifts the position of sibling controls — a layout shift here would risk moving a control
+   out from under an in-progress pointer interaction. Shown only when its info icon button has
+   been explicitly activated (click, or Enter/Space while focused) — see the click-to-toggle
+   wiring in src/aspiration-modal.ts — not merely on hover/focus of the surrounding field. */
+.modal__tooltip-text--visible {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  margin: 0.25rem 0 0;
+  width: max-content;
+  max-width: min(20rem, 90vw);
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  font-size: 0.875rem;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 1px solid #8a6d3b;
+  border-radius: 6px;
+  padding: 0.375rem 0.5rem;
+  box-shadow: 0 2px 6px rgba(26, 26, 26, 0.15);
+}
+
+.modal__save {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: 8px;
+  /* Slightly darker purple than the modal's pastel background, scoped to this modal only.
+     White text on this background is ~9.6:1, comfortably over the 4.5:1 AA minimum. */
+  background: #5a2d8c;
+  color: #ffffff;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal__save:hover:not(:disabled) {
+  background: #4b2079;
+}
+
+.modal__save:disabled {
+  /* Muted/desaturated version of the enabled #5a2d8c purple (not the old gold-ish
+     #c9bda3) so the disabled state reads as "purple, just muted" rather than looking
+     like an entirely different, unfinished color scheme. */
+  background: #b7a3cf;
+  cursor: not-allowed;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.modal__actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.modal__cancel {
+  border: 1px solid #8a6d3b;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.modal__cancel:hover {
+  background: #f4ede0;
+}
+
+.modal__discard {
+  border: none;
+  background: #8a6d3b;
+  color: #ffffff;
+}
+
+.modal__discard:hover {
+  background: #6f5730;
+}
+
+.modal__close:focus-visible,
+.modal__field input:focus-visible,
+.modal__field textarea:focus-visible,
+.aspiration-modal__link-option input:focus-visible,
+.modal__info:focus-visible,
+.modal__save:focus-visible,
+.modal__actions button:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}

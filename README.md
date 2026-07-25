@@ -2,7 +2,7 @@
 
 A Vite-built Progressive Web App, deployed to GitHub Pages: https://lauz9888.github.io/throughline/
 
-Currently a scaffold: a top bar with the "throughline" wordmark (self-hosted Playfair Display) on the left and a gold/white/near-black "add item" button on the right — the button opens a dropdown of item types to create (Aspiration, Goal, Milestone, Task, Habit), though selecting one doesn't do anything yet — plus a hand-authored SVG favicon/app icon and PWA support (`manifest.webmanifest`, `sw.js`) via `vite-plugin-pwa`.
+Currently a scaffold: a top bar with the "throughline" wordmark (self-hosted Playfair Display) on the left and a gold/white/near-black "add item" button on the right — the button opens a dropdown of item types to create (Aspiration, Goal, Milestone, Task, Habit). Selecting "Aspiration" opens a "Create Aspiration" modal: a Title field (mandatory), Description and Reason fields (both optional), and a Links section (a Goals/Habits radio toggle that — since Goal and Habit aren't real features yet — always shows a "nothing to link" message rather than an actual list). The modal can be dismissed via its close (X) control, `Escape`, or a backdrop click, each prompting an unsaved-changes confirmation if any field has content or a Links radio is selected; Save persists the aspiration to `localStorage`, where it survives app reloads (there's no in-app view of saved aspirations yet). Selecting Goal, Milestone, Task, or Habit still does nothing. The scaffold also includes a hand-authored SVG favicon/app icon and PWA support (`manifest.webmanifest`, `sw.js`) via `vite-plugin-pwa`.
 
 ## Development
 
@@ -30,8 +30,8 @@ npm run test:coverage:merge   # combined coverage across all three suites
 
 Automated WCAG 2.1 A/AA scans run alongside the functional tests, scoped via each tool's tag filter so only real success criteria are checked (not axe-core's broader best-practice rules):
 
-- **Unit (`test:unit`)**: `jest-axe`, wired up in `vitest.setup.ts`. See `src/app.test.ts` for the pattern — color-contrast is disabled at this layer since jsdom has no real rendering engine to evaluate it against.
-- **E2e (`test:e2e`)**: `@axe-core/playwright`, covering color-contrast and any other checks that need a real browser. See `tests/e2e/home.spec.ts` and `tests/e2e/add-item-button.spec.ts`.
+- **Unit (`test:unit`)**: `jest-axe`, wired up in `vitest.setup.ts`. See `src/app.test.ts` for the pattern — color-contrast is disabled at this layer since jsdom has no real rendering engine to evaluate it against. `src/aspiration-modal.test.ts` extends this to several dialog states (freshly opened, a Links radio selected, the unsaved-changes confirmation open on top of the modal).
+- **E2e (`test:e2e`)**: `@axe-core/playwright`, covering color-contrast and any other checks that need a real browser. See `tests/e2e/home.spec.ts`, `tests/e2e/add-item-button.spec.ts`, and `tests/e2e/aspiration-modal.spec.ts` — the latter also covers real-browser-only behavior jsdom can't verify, like background focus containment via `inert` and native radio-group keyboard navigation.
 
 ## Workflow
 
