@@ -187,7 +187,6 @@ test.describe('add item button', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByRole('menu')).toBeVisible();
 
-    await page.keyboard.press('Tab');
     const focusedName = await page.evaluate(() => document.activeElement?.textContent);
     expect(focusedName).toBe('Aspiration');
   });
@@ -203,6 +202,103 @@ test.describe('add item button', () => {
 
     await expect(page.getByRole('menu')).toBeVisible();
     await expect(button).toHaveAttribute('aria-expanded', 'true');
+
+    const focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Aspiration');
+  });
+
+  test('keyboard-only flow: ArrowDown from the trigger opens the dropdown and focuses the first item', async ({
+    page,
+  }) => {
+    await page.goto('./');
+
+    await page.keyboard.press('Tab');
+    const button = page.getByRole('button', { name: 'Add item' });
+    await expect(button).toBeFocused();
+
+    await page.keyboard.press('ArrowDown');
+
+    await expect(page.getByRole('menu')).toBeVisible();
+    const focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Aspiration');
+  });
+
+  test('keyboard-only flow: ArrowUp from the trigger opens the dropdown and focuses the last item (regression)', async ({
+    page,
+  }) => {
+    await page.goto('./');
+
+    await page.keyboard.press('Tab');
+    const button = page.getByRole('button', { name: 'Add item' });
+    await expect(button).toBeFocused();
+
+    await page.keyboard.press('ArrowUp');
+
+    await expect(page.getByRole('menu')).toBeVisible();
+    const focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Habit');
+    expect(focusedName).not.toBe('Task');
+  });
+
+  test('keyboard-only flow: arrow-key navigation moves through middle items', async ({ page }) => {
+    await page.goto('./');
+
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    let focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Milestone');
+
+    await page.keyboard.press('ArrowUp');
+    focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Goal');
+  });
+
+  test('keyboard-only flow: Home and End jump to the first and last item', async ({ page }) => {
+    await page.goto('./');
+
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    let focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Milestone');
+
+    await page.keyboard.press('End');
+    focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Habit');
+
+    await page.keyboard.press('Home');
+    focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Aspiration');
+  });
+
+  test('keyboard-only flow: Tab from the last-roving-focused item closes the dropdown and leaves the widget', async ({
+    page,
+  }) => {
+    await page.goto('./');
+
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toBeVisible();
+    const focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Aspiration');
+
+    await page.keyboard.press('Tab');
+
+    await expect(page.getByRole('menu')).toBeHidden();
+
+    const activeElementInfo = await page.evaluate(() => ({
+      isBody: document.activeElement === document.body,
+      id: (document.activeElement as HTMLElement | null)?.id ?? null,
+    }));
+    expect(activeElementInfo.isBody).toBe(true);
+    expect(activeElementInfo.id).not.toBe('add-item-button');
   });
 
   test('open dropdown has no automatically detectable WCAG violations', async ({ page }) => {
@@ -211,6 +307,24 @@ test.describe('add item button', () => {
     const button = page.getByRole('button', { name: 'Add item' });
     await button.click();
     await expect(page.getByRole('menu')).toBeVisible();
+
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+
+    expect(results.violations).toEqual([]);
+  });
+
+  test('dropdown after roving-tabindex arrow navigation has no automatically detectable WCAG violations', async ({
+    page,
+  }) => {
+    await page.goto('./');
+
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    await page.keyboard.press('ArrowDown');
+    const focusedName = await page.evaluate(() => document.activeElement?.textContent);
+    expect(focusedName).toBe('Goal');
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
 
