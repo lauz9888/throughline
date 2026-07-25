@@ -29,7 +29,7 @@ deployed run, each starting with a fenced ` ```metrics ` block written by `repor
    `outcome`/`bugs_by_category` specifically (an earlier version of this block), treat a missing
    `outcome` as `deployed` and a missing `bugs_by_category` as all-zero — don't drop the whole
    report over a field that didn't exist yet.
-2. Sort the remaining releases by `completed_at` ascending. This list *is* the release log — one
+2. Sort the remaining releases by `completed_at` ascending. This list _is_ the release log — one
    entry per completed pipeline run, but **not every entry reached live users**: `outcome` is
    either `deployed` (the change is live) or `merged-deployment-failed` (it merged to `main`, but
    Step 19's CD watch failed, so the previous version is still what's actually live). Per bucket,
@@ -60,16 +60,17 @@ deployed run, each starting with a fenced ` ```metrics ` block written by `repor
      - `ci`
      - `cd`
 
-     Each stage count here is the number of *issues* raised at that stage, not the number of
+     Each stage count here is the number of _issues_ raised at that stage, not the number of
      labels applied — `bugs_by_stage` already holds one entry per issue (see
      `report-generator.md`'s metrics-block contract), so summing this histogram gives an accurate
      unique-defect total. Call out `cd` separately as the **post-merge delivery-failure count and
      rate** (`cd` count / total defects that week) — this is the headline shift-left number, since
      every other label represents a defect caught before the change merged to `main`. Be precise
-     about what `cd` means: it's the CD *workflow* failing after merge (build, packaging, auth,
+     about what `cd` means: it's the CD _workflow_ failing after merge (build, packaging, auth,
      artifact upload, or the deploy step itself) — it is **not** a claim that a confirmed defect
      reached a live user. A `cd` failure often means the previous version stayed live and nothing
      new shipped at all; don't call this "escaped to production" or similar in the report text.
+
    - **Security / accessibility (informational)** — report `bugs_by_category`'s `security` and
      `accessibility` sums as a separate line, clearly labeled as classifications layered on top of
      a stage (per `SKILL.md`'s "Bug tracking" convention, every security/accessibility issue also
@@ -82,12 +83,13 @@ deployed run, each starting with a fenced ` ```metrics ` block written by `repor
      is a property of the code change itself, measured pre-merge at Step 12, independent of
      whether the subsequent deploy succeeded).
    - **Bug-fix churn** — mean bugs raised per release that week, using the same `sum(bugs_by_stage)
-     / total_releases` formula as defect density; surfaced as its own row so a churn spike is
+/ total_releases` formula as defect density; surfaced as its own row so a churn spike is
      visible even in a week where release count also moved.
 
    Close with a short paragraph comparing the most recent week to the oldest week in this same
    report for velocity, post-merge delivery-failure rate, and delivery time — state the direction
    (up/down/flat) explicitly rather than leaving the reader to eyeball 8 rows.
+
 4. **Monthly report** — write `reports/metrics/monthly-<YYYY-MM-DD>.md`. Same computation,
    bucketed by calendar month, from the earliest release's `completed_at` (state this date
    explicitly — it's this pipeline's adoption date in throughline) through the current month.
