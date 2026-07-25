@@ -23,14 +23,17 @@ Then('the app root element contains exactly one top-level child', function (this
   assert.equal(root!.children.length, 1);
 });
 
-Then('the rendered content includes the text {string}', function (this: World, expectedText: string) {
-  const root = this.document.getElementById('app');
-  assert.ok(root, 'expected #app root element to exist in the test DOM');
-  assert.ok(
-    root!.textContent?.includes(expectedText),
-    `expected rendered content to include "${expectedText}", got "${root!.textContent}"`
-  );
-});
+Then(
+  'the rendered content includes the text {string}',
+  function (this: World, expectedText: string) {
+    const root = this.document.getElementById('app');
+    assert.ok(root, 'expected #app root element to exist in the test DOM');
+    assert.ok(
+      root!.textContent?.includes(expectedText),
+      `expected rendered content to include "${expectedText}", got "${root!.textContent}"`,
+    );
+  },
+);
 
 Then("that element's accessible text is {string}", function (this: World, expectedText: string) {
   assert.ok(renderedElement, 'expected the app to have been rendered first');

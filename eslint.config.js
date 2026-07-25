@@ -2,6 +2,7 @@
 const js = require('@eslint/js');
 const tseslint = require('typescript-eslint');
 const globals = require('globals');
+const prettier = require('eslint-config-prettier');
 
 module.exports = tseslint.config(
   {
@@ -34,5 +35,6 @@ module.exports = tseslint.config(
     languageOptions: {
       globals: globals.node,
     },
-  }
+  },
+  prettier,
 );

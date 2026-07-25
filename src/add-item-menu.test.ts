@@ -72,7 +72,7 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[0].click();
+    fixture.items[0]!.click();
 
     expect(fixture.menu.hidden).toBe(true);
     expect(fixture.button.getAttribute('aria-expanded')).toBe('false');
@@ -125,20 +125,20 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[4].focus();
+    fixture.items[4]!.focus();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
 
-    expect(document.activeElement).toBe(fixture.items[0]);
+    expect(document.activeElement).toBe(fixture.items[0]!);
   });
 
   it('moves focus to the previous menu item on ArrowUp, wrapping from the first to the last', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[0].focus();
+    fixture.items[0]!.focus();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
 
-    expect(document.activeElement).toBe(fixture.items[4]);
+    expect(document.activeElement).toBe(fixture.items[4]!);
   });
 
   it('removes the document-level listeners when the returned destroy function is called', () => {

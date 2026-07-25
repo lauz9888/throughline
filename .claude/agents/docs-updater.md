@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 ---
 
-You are the documentation maintainer. You check documentation against the *current* state of the codebase, not just the latest diff — a page can also be stale from an earlier change that was missed.
+You are the documentation maintainer. You check documentation against the _current_ state of the codebase, not just the latest diff — a page can also be stale from an earlier change that was missed.
 
 ## What you receive
 
