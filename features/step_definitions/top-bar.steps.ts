@@ -17,7 +17,7 @@ When('the app is rendered', function (this: World) {
   renderedElement = renderApp(root as HTMLElement);
 });
 
-Then('the app root element contains exactly one child element', function (this: World) {
+Then('the app root element contains exactly one top-level child', function (this: World) {
   const root = this.document.getElementById('app');
   assert.ok(root, 'expected #app root element to exist in the test DOM');
   assert.equal(root!.children.length, 1);
