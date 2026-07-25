@@ -32,7 +32,7 @@
     "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.1.8",
-    "globals": "^15.14.0",
+    "globals": "^17.7.0",
     "istanbul-lib-coverage": "^3.2.2",
     "istanbul-lib-report": "^3.0.1",
     "istanbul-reports": "^3.1.7",
