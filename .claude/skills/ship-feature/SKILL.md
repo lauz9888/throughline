@@ -95,9 +95,8 @@ Same pattern as Step 9, running `npm run test:e2e`, label `e2e-test`.
 
 1. Spawn `Agent(subagent_type="qa-reviewer")` with the full diff (`git diff main...HEAD`), `design.md`, and `requirements.md`. It reviews best practice/readability/efficiency/maintainability/testability/accessibility, sanity-checks against requirements, computes combined coverage (`npm run test:coverage:merge`), and makes any code-quality/small-a11y fixes directly. As of the `audit`/`e2e-tests`/`coverage-merge` CI jobs (`ci.yml`), the audit/e2e/coverage gates this step enforces are now also enforced automatically on every push/PR, as defense-in-depth for any change that reaches `main` outside this pipeline (e.g. a Dependabot PR, or a manual commit). This step's own gates remain the pre-merge, fast-feedback path _within_ a pipeline run — don't skip Step 12 on the assumption CI will catch it; CI is the backstop, not a replacement for the in-pipeline check.
 2. On `STATUS: security-gap` (a security-hygiene finding qa-reviewer couldn't resolve itself —
-   see its `FINDINGS` list): `gh issue create --label security --label qa --title "<slug>:
-security — <short summary>" --body "<finding>\n\nRelated to #<tracking-issue>"` for each
-   finding (create the `security` label once if missing, per the existing "Bug tracking"
+   see its `FINDINGS` list): `gh issue create --label security --label qa --title "<slug>: security — <short summary>" --body "<finding>\n\nRelated to #<tracking-issue>"`
+   for each finding (create the `security` label once if missing, per the existing "Bug tracking"
    convention). Then, per finding:
    - **Committed secret/credential**: do not attempt automated remediation of the secret's
      _value_ — rotating/revoking a credential is an out-of-band action this pipeline has no
@@ -111,9 +110,11 @@ security — <short summary>" --body "<finding>\n\nRelated to #<tracking-issue>"
      re-review via a fresh `solution-reviewer`, then implementer/`bug-fixer`; otherwise
      spawn/`SendMessage` `bug-fixer` directly with the finding and its reproduce command (e.g.
      `npm audit --omit=dev --audit-level=high`, or the specific rendering call site).
-     Re-run the full Step 9–11 suites as a safety net once every finding is resolved, close the
-     issue(s), then re-spawn `qa-reviewer` fresh. Counts toward the same 5-iteration cap as the
-     rest of Step 12.
+
+   Once every finding (of either kind above) is resolved: re-run the full Step 9–11 suites as a
+   safety net, close the issue(s), then re-spawn `qa-reviewer` fresh. Counts toward the same
+   5-iteration cap as the rest of Step 12.
+
 3. On `STATUS: accessibility-gap` (a UI surface is missing an automated WCAG scan, or has a violation the reviewer couldn't fix directly): `gh issue create --label accessibility --label qa ...` for each finding, route back to the matching Step 5/6/7 test-author agent(s) (unit-test-author/e2e-test-author for the missing scan; solution-designer first if the finding implies a design gap, not just a missing test) to add coverage or request a design fix, then re-run Steps 9–11 for the affected layer(s), close the issue(s), then re-spawn `qa-reviewer` fresh.
 4. On `STATUS: coverage-gap` (combined coverage below the threshold defined in `.claude/STANDARDS.md`, listing which layer(s) need more cases): route back to the matching Step 5/6/7 author agent(s) to add coverage, then re-run Steps 9–11 for the affected layer(s), then re-spawn `qa-reviewer` fresh.
 5. On `STATUS: changes-made`: re-run the full Step 9–11 suites (safety net). Any failure follows the normal bug-fixer loop from those steps.
