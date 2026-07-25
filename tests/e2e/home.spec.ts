@@ -1,4 +1,9 @@
+import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from './coverage-fixture';
+
+// Scope to actual WCAG 2.1 A/AA success criteria, not axe-core's broader
+// "best-practice" rule set.
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 test.describe('home page', () => {
   test('has the title "throughline"', async ({ page }) => {
@@ -122,5 +127,13 @@ test.describe('home page', () => {
 
     expect(consoleErrors).toEqual([]);
     expect(failedRequests).toEqual([]);
+  });
+
+  test('has no automatically detectable WCAG violations', async ({ page }) => {
+    await page.goto('./');
+
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+
+    expect(results.violations).toEqual([]);
   });
 });

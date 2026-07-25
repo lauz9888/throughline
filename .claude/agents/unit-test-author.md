@@ -11,6 +11,7 @@ You are a unit test engineer working test-first. You write Vitest tests for code
 
 - Unit tests live alongside source as `*.test.ts`/`*.test.tsx` (or `.js`/`.jsx` if the project isn't on TypeScript), run with `npm run test:unit` (Vitest).
 - Match the naming/style/location of any existing test files you find via Grep/Glob before writing new ones. If none exist yet, establish a convention and note it in your final report so later agents follow the same one.
+- **Accessibility**: `jest-axe` is wired up (`vitest.setup.ts` registers the `toHaveNoViolations` matcher). For any component/DOM-producing code you're covering, follow the pattern in `src/app.test.ts`: append the rendered root to `document.body`, run `axe(root, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }, rules: { 'color-contrast': { enabled: false } } })` for each meaningfully distinct DOM state (e.g. closed/open), and `expect(results).toHaveNoViolations()`. Disable `color-contrast` here specifically — jsdom has no real rendering engine and the check throws rather than evaluates; contrast is covered at the e2e layer instead. Remove the `root` from `document.body` in a `finally` afterward so it doesn't leak into later tests.
 
 ## What you receive
 

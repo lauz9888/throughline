@@ -17,7 +17,8 @@ A prompt containing: the user's raw change request, and a path to a working file
 2. Write or update `requirements.md` at the given path with:
    - **Request** — the original ask, verbatim.
    - **Context** — what exists today that's relevant (cite file paths), or "no existing code — greenfield" if applicable.
-   - **Requirements** — a numbered list of specific, testable statements (each phrased so a test could pass/fail against it). Split out any explicit non-functional requirements (PWA/offline behavior, performance, accessibility) only if the request implies them — don't invent scope.
+   - **Requirements** — a numbered list of specific, testable statements (each phrased so a test could pass/fail against it). Split out any explicit non-functional requirements (PWA/offline behavior, performance) only if the request implies them — don't invent scope.
+   - **Accessibility requirements** — for any request that adds or changes UI/interactive elements, always include testable WCAG 2.1 AA requirements as their own numbered items (not gated on the user mentioning accessibility): correct semantic role/name/value for new controls, full keyboard operability, visible focus indication, logical focus management (e.g. focus returns somewhere sensible when a transient UI closes), and sufficient color contrast for any new text/UI. This is baseline conformance, not invented scope — omit only for changes with no UI surface (e.g. pure backend/build logic).
    - **Out of scope** — anything adjacent you're deliberately excluding, and why.
    - **Open questions** — anything you cannot resolve from the codebase or the request alone. Do not guess — ask.
 3. If you have open questions, do not invent answers. Stop and report them.

@@ -26,6 +26,13 @@ npm run test:e2e              # Playwright (reads BASE_URL to run against a live
 npm run test:coverage:merge   # combined coverage across all three suites
 ```
 
+### Accessibility
+
+Automated WCAG 2.1 A/AA scans run alongside the functional tests, scoped via each tool's tag filter so only real success criteria are checked (not axe-core's broader best-practice rules):
+
+- **Unit (`test:unit`)**: `jest-axe`, wired up in `vitest.setup.ts`. See `src/app.test.ts` for the pattern — color-contrast is disabled at this layer since jsdom has no real rendering engine to evaluate it against.
+- **E2e (`test:e2e`)**: `@axe-core/playwright`, covering color-contrast and any other checks that need a real browser. See `tests/e2e/home.spec.ts` and `tests/e2e/add-item-button.spec.ts`.
+
 ## Workflow
 
 Every change — feature, fix, or refactor — runs through the `/ship-feature` pipeline (`.claude/skills/ship-feature/SKILL.md`) rather than being made ad hoc:
@@ -34,10 +41,10 @@ Every change — feature, fix, or refactor — runs through the `/ship-feature` 
 2. A requirements analyst reviews it against the codebase and docs, asks clarifying questions, and drafts `requirements.md` — you approve it or send it back for changes.
 3. A solution designer proposes an approach; a separate reviewer checks it against the requirements and codebase until it's approved.
 4. A feature branch is created; work happens there.
-5–7. Unit (Vitest), BDD (Cucumber.js), and e2e (Playwright) tests are written test-first and confirmed to fail (red) before any implementation exists.
+5–7. Unit (Vitest), BDD (Cucumber.js), and e2e (Playwright) tests are written test-first and confirmed to fail (red) before any implementation exists — including automated WCAG scans (`jest-axe`/`@axe-core/playwright`) for any new or changed UI.
 8. The implementation is written until those scoped tests pass.
 9–11. The full unit, BDD, and e2e suites are run; any failure is logged as a GitHub issue and fixed, looping until green.
-12. A QA pass reviews code quality and checks combined test coverage is at least 90%.
+12. A QA pass reviews code quality, accessibility, and checks combined test coverage is at least 90%.
 13. You manually test the change on a local URL; any bug you report is logged and fixed.
 14. The branch merges to `main` via PR.
 15–16. CI (build, typecheck, lint, unit, BDD) and CD (production build, GitHub Pages deploy, smoke check, PWA validation, live e2e) run automatically.

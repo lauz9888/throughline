@@ -1,9 +1,14 @@
+import AxeBuilder from '@axe-core/playwright';
 import { test, expect } from './coverage-fixture';
 
 const VIEWPORTS = [
   { width: 375, height: 667 }, // mobile
   { width: 1280, height: 800 }, // desktop
 ];
+
+// Scope to actual WCAG 2.1 A/AA success criteria, not axe-core's broader
+// "best-practice" rule set.
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 test.describe('add item button', () => {
   test('renders as a rounded 44x44 square near the top-right at mobile and desktop widths', async ({
@@ -198,5 +203,17 @@ test.describe('add item button', () => {
 
     await expect(page.getByRole('menu')).toBeVisible();
     await expect(button).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('open dropdown has no automatically detectable WCAG violations', async ({ page }) => {
+    await page.goto('./');
+
+    const button = page.getByRole('button', { name: 'Add item' });
+    await button.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+
+    expect(results.violations).toEqual([]);
   });
 });
