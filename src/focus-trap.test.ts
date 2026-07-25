@@ -82,4 +82,37 @@ describe('createFocusTrap', () => {
     expect(document.activeElement).toBe(fixture.last);
     expect(event.defaultPrevented).toBe(false);
   });
+
+  it('treats the checked radio in a same-name group as the group\'s tab stop, not the first one in DOM order', () => {
+    document.body.innerHTML = '';
+    const container = document.createElement('div');
+
+    const radioA = document.createElement('input');
+    radioA.type = 'radio';
+    radioA.name = 'group';
+
+    const radioB = document.createElement('input');
+    radioB.type = 'radio';
+    radioB.name = 'group';
+    radioB.checked = true; // checked, but not first in DOM order
+
+    const last = document.createElement('button');
+    last.type = 'button';
+    last.textContent = 'Last';
+
+    container.append(radioA, radioB, last);
+    document.body.append(container);
+
+    createFocusTrap(container);
+
+    last.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    container.dispatchEvent(event);
+
+    // Tab from the last element should wrap to the group's one real tab
+    // stop — the checked radio (radioB) — not radioA, which is unchecked
+    // and therefore not a native tab stop despite being first in DOM order.
+    expect(document.activeElement).toBe(radioB);
+    expect(event.defaultPrevented).toBe(true);
+  });
 });
