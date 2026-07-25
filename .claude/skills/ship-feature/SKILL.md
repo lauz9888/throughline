@@ -5,18 +5,18 @@ description: Runs the full throughline change pipeline end-to-end — requiremen
 
 You are driving a multi-step, largely-autonomous development pipeline for the throughline repo. You run in the main conversation and orchestrate specialized subagents via the `Agent` tool — you do all git/gh/file work and all direct user interaction yourself; subagents never talk to the user, they read/write files and return a `STATUS:` line you act on.
 
-Read this whole file before acting. Follow the steps in order — they mirror the user's 21-step pipeline spec 1:1, so don't skip or reorder one even if it looks safe to shortcut.
+Read this whole file before acting. Follow the steps in order — they mirror the user's pipeline spec 1:1 (22 steps, after Step 13's base-path smoke check was added), so don't skip or reorder one even if it looks safe to shortcut.
 
 ## Pre-authorization (read this before Step 4)
 
-The user has explicitly pre-authorized this workflow to create branches, merge to `main`, delete branches, and create GitHub issues **without pausing for per-action confirmation**, scoped exactly to what this file describes. Do not re-ask for confirmation at Steps 4, 14, or 21, or before filing a bug issue. This authorization does **not** extend to anything not described here — never force-push, never touch a branch this workflow didn't create, never change repo/branch-protection settings, never send messages outside GitHub issues/PRs this pipeline creates. If anything outside this file's scope comes up mid-run, stop and ask.
+The user has explicitly pre-authorized this workflow to create branches, merge to `main`, delete branches, and create GitHub issues **without pausing for per-action confirmation**, scoped exactly to what this file describes. Do not re-ask for confirmation at Steps 4, 15, or 22, or before filing a bug issue. This authorization does **not** extend to anything not described here — never force-push, never touch a branch this workflow didn't create, never change repo/branch-protection settings, never send messages outside GitHub issues/PRs this pipeline creates. If anything outside this file's scope comes up mid-run, stop and ask.
 
 ## Conventions
 
 **Artifacts & state.** Everything for one run lives in `.workflow/<slug>/` (gitignored — local scratch, not part of the PR):
 - `requirements.md`, `design.md` — the documents subagents read and write.
 - `state.md` — plain markdown, updated immediately after every step completes: current step number, branch name, tracking issue number, per-layer test file lists (recorded at Steps 5/6/7), and open/closed bug issue numbers. This is what makes a run resumable.
-- `meta.json` — `{"slug": ..., "started_at": ISO timestamp}`, written at Step 2 kickoff; feeds the Step 20 duration metric.
+- `meta.json` — `{"slug": ..., "started_at": ISO timestamp}`, written at Step 2 kickoff; feeds the Step 21 duration metric.
 
 **Resuming.** If invoked with no clear new change request, look for `.workflow/*/state.md`. Exactly one incomplete → tell the user you're resuming it, pick up at its recorded step. More than one → `AskUserQuestion`. None → treat input as a new request.
 
@@ -26,7 +26,7 @@ The user has explicitly pre-authorized this workflow to create branches, merge t
 
 **Continuing a subagent vs. spawning fresh.** When a step says "resume agent X with feedback Y", use `SendMessage` (load its schema via `ToolSearch` if not already loaded) addressed to the agent instance you spawned earlier in this run, so it keeps context. Only spawn a fresh `Agent` call the first time a role is needed in this run.
 
-**Bug tracking.** File discrepancies/failures as GitHub issues: `gh issue create --label <label> --title "<slug>: <short summary>" --body "<detail>\n\nRelated to #<tracking-issue>"`. Create labels once if missing (`gh label list`, then `gh label create <name> --color <hex>` for any absent): `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `manual-test`, `ci`, `accessibility`. Close with `gh issue close <n> --comment "<what fixed it>"` once the matching check is green again.
+**Bug tracking.** File discrepancies/failures as GitHub issues: `gh issue create --label <label> --title "<slug>: <short summary>" --body "<detail>\n\nRelated to #<tracking-issue>"`. Create labels once if missing (`gh label list`, then `gh label create <name> --color <hex>` for any absent): `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `manual-test`, `deploy-path`, `ci`, `accessibility`. Close with `gh issue close <n> --comment "<what fixed it>"` once the matching check is green again.
 
 **Accessibility.** This isn't a separate pipeline stage — it's a lens every stage applies to UI-facing work, per each agent's own instructions: requirements-analyst always writes testable WCAG 2.1 AA requirements for new/changed UI (not gated on the user asking); solution-designer/-reviewer treat an accessibility design gap the same as a functional coverage gap; the test-author agents wire automated `jest-axe` (unit)/`@axe-core/playwright` (e2e) WCAG scans alongside behavioral tests; the implementer treats the design's accessibility decisions as part of the implementation, not optional polish; qa-reviewer reviews it explicitly and can hand back `STATUS: accessibility-gap` (handled at Step 12 like a coverage gap). Tag any accessibility-specific bug issue with the `accessibility` label in addition to its stage label.
 
@@ -99,42 +99,53 @@ Same pattern as Step 9, running `npm run test:e2e`, label `e2e-test`.
 5. On `STATUS: approved` (no changes needed, coverage ≥ 90%): move on.
 6. Cap the whole Step 12 cycle at 5 iterations.
 
-## Step 13 — Manual test gate (human gate #2)
+## Step 13 — Base-path smoke check (pre-merge)
+
+Steps 7 and 11 run `test:e2e` against a local preview built with the default base path, so they never exercise the production base path the app is actually served under once deployed — that gap is exactly what let CD-only path bugs (relative `goto`/`request` calls resolving off the deployed subpath instead of against it) reach production undetected before this step existed. Catch it here, pre-merge, reusing the same build flag and `BASE_URL` mechanism CD's `e2e-live` job uses against the real deployment — just pointed at a local server instead.
+
+1. Check `design.md`/`vite.config.*` for how the production base path is set (e.g. an env flag like `GITHUB_PAGES=true`). If the project has no non-root production base path at all (dev/build/deploy all serve from `/`), this step is a no-op — record that in `state.md` and move on.
+2. Otherwise, build with that production flag: e.g. `GITHUB_PAGES=true npm run build`.
+3. Serve it: `npm run preview -- --port 4174 --strictPort` in the background. The preview server serves under whatever base the build used, so its printed local URL already includes the production base path — read that URL from its output rather than assuming `http://localhost:4174/`.
+4. Run the full e2e suite against it: `BASE_URL=<url from step 3> npm run test:e2e`. This exercises the exact same specs and the exact same relative-vs-absolute-path code paths as CD's `e2e-live` job.
+5. Stop the preview server.
+6. On any failure: `gh issue create --label deploy-path --title "<slug>: base-path smoke check failure" --body "<failure output>\n\nRelated to #<tracking-issue>"`, spawn/`SendMessage` `Agent(subagent_type="bug-fixer")` with the failure output and the repro command from step 4, re-run steps 2–4 once it reports `STATUS: fixed`, close the issue once green. Repeat until passing, capped at 5 cycles.
+
+## Step 14 — Manual test gate (human gate #2)
 
 1. Start the app locally (`npm run dev`) and give the user the local URL.
 2. Ask (`AskUserQuestion` or plain question) whether manual testing passed, or isn't needed.
 3. If the user reports a bug: `gh issue create --label manual-test --title "..." --body "<what the user reported>\n\nRelated to #<tracking-issue>"`, spawn/`SendMessage` `Agent(subagent_type="bug-fixer")` with the report, re-run the full Steps 9–11 suites as a safety net once it reports `STATUS: fixed`, close the issue, ask the user to re-test. Loop until confirmed pass (or explicitly not required).
 
-## Step 14 — Merge to main
+## Step 15 — Merge to main
 
-On confirmation from Step 13: push the branch (`git push -u origin feature/<slug>`), open a PR (`gh pr create --title "<slug>" --body "Closes #<tracking-issue>" --base main --head feature/<slug>`), record the PR number in `state.md`. This push is what triggers CI (Step 15).
+On confirmation from Step 14: push the branch (`git push -u origin feature/<slug>`), open a PR (`gh pr create --title "<slug>" --body "Closes #<tracking-issue>" --base main --head feature/<slug>`), record the PR number in `state.md`. This push is what triggers CI (Steps 16–17).
 
-## Steps 15–16 — CI / CD
+## Steps 16–17 — CI / CD
 
 These run in GitHub Actions (`.github/workflows/ci.yml` on push/PR, `.github/workflows/cd.yml` on merge to main) — nothing to do here except watch them:
 `gh pr checks <pr-number> --watch`.
 
-## Step 17 — CI bug-fix loop
+## Step 18 — CI bug-fix loop
 
 On any CI job failure: `gh issue create --label ci --title "<slug>: CI failure — <job name>" --body "<job output>\n\nRelated to #<tracking-issue>"`, spawn/`SendMessage` `Agent(subagent_type="bug-fixer")` with the job output and which local command reproduces it (map job→command: lint→`npm run lint`, typecheck→`npm run typecheck`, build→`npm run build`, unit→`npm run test:unit`, bdd→`npm run test:bdd`), push the fix, re-watch CI, close the issue once green. Cap at 5 cycles.
 
-Once all CI jobs are green: `gh pr merge <pr-number> --squash --delete-branch`. This performs the merge (triggering CD) and deletes the remote branch — and if the current checkout is on `feature/<slug>`, `gh` also switches it back to `main` and deletes the local branch as part of the same command. So by Step 21, local cleanup is very often already done; treat it as the expected common case, not an edge case.
+Once all CI jobs are green: `gh pr merge <pr-number> --squash --delete-branch`. This performs the merge (triggering CD) and deletes the remote branch — and if the current checkout is on `feature/<slug>`, `gh` also switches it back to `main` and deletes the local branch as part of the same command. So by Step 22, local cleanup is very often already done; treat it as the expected common case, not an edge case.
 
-## Step 18 — CD failure logging (no auto-fix)
+## Step 19 — CD failure logging (no auto-fix)
 
-Watch the CD run: `gh run watch $(gh run list --workflow=cd.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')`. Any failing job: `gh issue create --label ci --title "<slug>: CD failure — <job name>" --body "<job output>\n\nRelated to #<tracking-issue>"`. Per spec, do **not** auto-fix these — just log and tell the user. Wait for CD to finish (pass or fail) before Step 19.
+Watch the CD run: `gh run watch $(gh run list --workflow=cd.yml --branch main --limit 1 --json databaseId --jq '.[0].databaseId')`. Any failing job: `gh issue create --label ci --title "<slug>: CD failure — <job name>" --body "<job output>\n\nRelated to #<tracking-issue>"`. Per spec, do **not** auto-fix these — just log and tell the user. Wait for CD to finish (pass or fail) before Step 20.
 
-## Step 19 — Documentation update
+## Step 20 — Documentation update
 
 Spawn `Agent(subagent_type="docs-updater")` with the full diff of what merged (`git diff <previous-main-sha>..<merge-sha>`) and `requirements.md`/`design.md`. On `STATUS: updated`, commit directly to `main` (docs-only, no branch/PR needed): `git checkout main && git pull`, apply, `git add README.md <other files> && git commit -m "<slug>: update docs" && git push`.
 
-## Step 20 — Post-change report
+## Step 21 — Post-change report
 
-Spawn `Agent(subagent_type="report-generator")` with the full `.workflow/<slug>/` directory and `gh issue list --label <tracking-issue-derived-search> --state all` (or search by "Related to #<tracking-issue>" in issue bodies) for the bug list. It writes `reports/<YYYY-MM-DD>-<slug>.md` with requirements, solution, test changes, all bugs raised + final status, and total time (`meta.json.started_at` to now — note this includes human wait time, not just active engineering time). Commit and push this directly to `main` alongside Step 19, or as its own small commit.
+Spawn `Agent(subagent_type="report-generator")` with the full `.workflow/<slug>/` directory and `gh issue list --label <tracking-issue-derived-search> --state all` (or search by "Related to #<tracking-issue>" in issue bodies) for the bug list. It writes `reports/<YYYY-MM-DD>-<slug>.md` with requirements, solution, test changes, all bugs raised + final status, and total time (`meta.json.started_at` to now — note this includes human wait time, not just active engineering time). Commit and push this directly to `main` alongside Step 20, or as its own small commit.
 
-## Step 21 — Cleanup
+## Step 22 — Cleanup
 
-The remote branch was already deleted by Step 17's `gh pr merge --delete-branch`, and — per that step's note — the local branch is very often already gone too (`gh` deletes it and switches you back to `main` automatically if it was checked out during the merge). Check before acting rather than assuming either outcome:
+The remote branch was already deleted by Step 18's `gh pr merge --delete-branch`, and — per that step's note — the local branch is very often already gone too (`gh` deletes it and switches you back to `main` automatically if it was checked out during the merge). Check before acting rather than assuming either outcome:
 
 1. `git branch --list feature/<slug>`. If it's empty, the local branch is already cleaned up — just confirm you're on `main` (`git checkout main` is a safe no-op if already there) and skip straight to step 3.
 2. If it still exists (e.g. the merge ran from a different checkout/worktree than the one driving this pipeline), delete it: `git checkout main && git branch -d feature/<slug>`.
