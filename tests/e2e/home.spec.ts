@@ -16,7 +16,7 @@ test.describe('home page', () => {
     await page.goto('./');
 
     const backgroundColor = await page.evaluate(
-      () => getComputedStyle(document.body).backgroundColor
+      () => getComputedStyle(document.body).backgroundColor,
     );
 
     expect(backgroundColor).toBe('rgb(255, 255, 255)');

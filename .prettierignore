@@ -1,0 +1,7 @@
+dist
+coverage
+.nyc_output
+playwright-report
+test-results
+node_modules
+package-lock.json

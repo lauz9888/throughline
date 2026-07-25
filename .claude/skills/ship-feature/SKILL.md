@@ -14,6 +14,7 @@ The user has explicitly pre-authorized this workflow to create branches, merge t
 ## Conventions
 
 **Artifacts & state.** Everything for one run lives in `.workflow/<slug>/` (gitignored — local scratch, not part of the PR):
+
 - `requirements.md`, `design.md` — the documents subagents read and write.
 - `state.md` — plain markdown, updated immediately after every step completes: current step number, branch name, tracking issue number, per-layer test file lists (recorded at Steps 5/6/7), and open/closed bug issue numbers. This is what makes a run resumable.
 - `meta.json` — `{"slug": ..., "started_at": ISO timestamp}`, written at Step 2 kickoff; feeds the Step 20 duration metric.
@@ -26,7 +27,7 @@ The user has explicitly pre-authorized this workflow to create branches, merge t
 
 **Continuing a subagent vs. spawning fresh.** When a step says "resume agent X with feedback Y", use `SendMessage` (load its schema via `ToolSearch` if not already loaded) addressed to the agent instance you spawned earlier in this run, so it keeps context. Only spawn a fresh `Agent` call the first time a role is needed in this run.
 
-**Bug tracking.** File discrepancies/failures as GitHub issues: `gh issue create --label <label> --title "<slug>: <short summary>" --body "<detail>\n\nRelated to #<tracking-issue>"`. Create labels once if missing (`gh label list`, then `gh label create <name> --color <hex>` for any absent): `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `manual-test`, `ci`, `accessibility`. Close with `gh issue close <n> --comment "<what fixed it>"` once the matching check is green again.
+**Bug tracking.** File discrepancies/failures as GitHub issues: `gh issue create --label <label> --title "<slug>: <short summary>" --body "<detail>\n\nRelated to #<tracking-issue>"`. Create labels once if missing (`gh label list`, then `gh label create <name> --color <hex>` for any absent): `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `manual-test`, `ci`, `accessibility`, `security`. Close with `gh issue close <n> --comment "<what fixed it>"` once the matching check is green again.
 
 **Accessibility.** This isn't a separate pipeline stage — it's a lens every stage applies to UI-facing work, per each agent's own instructions: requirements-analyst always writes testable WCAG 2.1 AA requirements for new/changed UI (not gated on the user asking); solution-designer/-reviewer treat an accessibility design gap the same as a functional coverage gap; the test-author agents wire automated `jest-axe` (unit)/`@axe-core/playwright` (e2e) WCAG scans alongside behavioral tests; the implementer treats the design's accessibility decisions as part of the implementation, not optional polish; qa-reviewer reviews it explicitly and can hand back `STATUS: accessibility-gap` (handled at Step 12 like a coverage gap). Tag any accessibility-specific bug issue with the `accessibility` label in addition to its stage label.
 
@@ -40,7 +41,7 @@ The user has explicitly pre-authorized this workflow to create branches, merge t
 
 ## Step 1 — Intake
 
-The user's request that invoked `/ship-feature` *is* Step 1. Nothing to do here except read it carefully before Step 2.
+The user's request that invoked `/ship-feature` _is_ Step 1. Nothing to do here except read it carefully before Step 2.
 
 ## Step 2 — Requirements (human gate #1)
 
@@ -92,12 +93,32 @@ Same pattern as Step 9, running `npm run test:e2e`, label `e2e-test`.
 
 ## Step 12 — QA review + coverage gate
 
-1. Spawn `Agent(subagent_type="qa-reviewer")` with the full diff (`git diff main...HEAD`), `design.md`, and `requirements.md`. It reviews best practice/readability/efficiency/maintainability/testability/accessibility, sanity-checks against requirements, computes combined coverage (`npm run test:coverage:merge`), and makes any code-quality/small-a11y fixes directly.
-2. On `STATUS: accessibility-gap` (a UI surface is missing an automated WCAG scan, or has a violation the reviewer couldn't fix directly): `gh issue create --label accessibility --label qa ...` for each finding, route back to the matching Step 5/6/7 test-author agent(s) (unit-test-author/e2e-test-author for the missing scan; solution-designer first if the finding implies a design gap, not just a missing test) to add coverage or request a design fix, then re-run Steps 9–11 for the affected layer(s), close the issue(s), then re-spawn `qa-reviewer` fresh.
-3. On `STATUS: coverage-gap` (combined coverage < 90%, listing which layer(s) need more cases): route back to the matching Step 5/6/7 author agent(s) to add coverage, then re-run Steps 9–11 for the affected layer(s), then re-spawn `qa-reviewer` fresh.
-4. On `STATUS: changes-made`: re-run the full Step 9–11 suites (safety net). Any failure follows the normal bug-fixer loop from those steps.
-5. On `STATUS: approved` (no changes needed, coverage ≥ 90%): move on.
-6. Cap the whole Step 12 cycle at 5 iterations.
+1. Spawn `Agent(subagent_type="qa-reviewer")` with the full diff (`git diff main...HEAD`), `design.md`, and `requirements.md`. It reviews best practice/readability/efficiency/maintainability/testability/accessibility, sanity-checks against requirements, computes combined coverage (`npm run test:coverage:merge`), and makes any code-quality/small-a11y fixes directly. As of the `audit`/`e2e-tests`/`coverage-merge` CI jobs (`ci.yml`), the audit/e2e/coverage gates this step enforces are now also enforced automatically on every push/PR, as defense-in-depth for any change that reaches `main` outside this pipeline (e.g. a Dependabot PR, or a manual commit). This step's own gates remain the pre-merge, fast-feedback path _within_ a pipeline run — don't skip Step 12 on the assumption CI will catch it; CI is the backstop, not a replacement for the in-pipeline check.
+2. On `STATUS: security-gap` (a security-hygiene finding qa-reviewer couldn't resolve itself —
+   see its `FINDINGS` list): `gh issue create --label security --label qa --title "<slug>:
+security — <short summary>" --body "<finding>\n\nRelated to #<tracking-issue>"` for each
+   finding (create the `security` label once if missing, per the existing "Bug tracking"
+   convention). Then, per finding:
+   - **Committed secret/credential**: do not attempt automated remediation of the secret's
+     _value_ — rotating/revoking a credential is an out-of-band action this pipeline has no
+     pre-authorization to perform. `AskUserQuestion`, surfacing the exact file/location (never
+     the secret value itself) and asking the user to rotate/revoke it externally and confirm.
+     Once confirmed, spawn/`SendMessage` `bug-fixer` to remove the committed value from the
+     file going forward (do not rewrite git history) and close the issue.
+   - **Unsanitized rendering, or an audit finding with no direct fix available**: if it implies
+     a design change (e.g. sanitization needs a hook the current architecture doesn't have),
+     `SendMessage` the finding to the Step 3 solution-designer agent to amend `design.md` first,
+     re-review via a fresh `solution-reviewer`, then implementer/`bug-fixer`; otherwise
+     spawn/`SendMessage` `bug-fixer` directly with the finding and its reproduce command (e.g.
+     `npm audit --omit=dev --audit-level=high`, or the specific rendering call site).
+     Re-run the full Step 9–11 suites as a safety net once every finding is resolved, close the
+     issue(s), then re-spawn `qa-reviewer` fresh. Counts toward the same 5-iteration cap as the
+     rest of Step 12.
+3. On `STATUS: accessibility-gap` (a UI surface is missing an automated WCAG scan, or has a violation the reviewer couldn't fix directly): `gh issue create --label accessibility --label qa ...` for each finding, route back to the matching Step 5/6/7 test-author agent(s) (unit-test-author/e2e-test-author for the missing scan; solution-designer first if the finding implies a design gap, not just a missing test) to add coverage or request a design fix, then re-run Steps 9–11 for the affected layer(s), close the issue(s), then re-spawn `qa-reviewer` fresh.
+4. On `STATUS: coverage-gap` (combined coverage below the threshold defined in `.claude/STANDARDS.md`, listing which layer(s) need more cases): route back to the matching Step 5/6/7 author agent(s) to add coverage, then re-run Steps 9–11 for the affected layer(s), then re-spawn `qa-reviewer` fresh.
+5. On `STATUS: changes-made`: re-run the full Step 9–11 suites (safety net). Any failure follows the normal bug-fixer loop from those steps.
+6. On `STATUS: approved` (no changes needed, coverage at or above the threshold defined in `.claude/STANDARDS.md`): move on.
+7. Cap the whole Step 12 cycle at 5 iterations.
 
 ## Step 13 — Manual test gate (human gate #2)
 
@@ -116,7 +137,7 @@ These run in GitHub Actions (`.github/workflows/ci.yml` on push/PR, `.github/wor
 
 ## Step 17 — CI bug-fix loop
 
-On any CI job failure: `gh issue create --label ci --title "<slug>: CI failure — <job name>" --body "<job output>\n\nRelated to #<tracking-issue>"`, spawn/`SendMessage` `Agent(subagent_type="bug-fixer")` with the job output and which local command reproduces it (map job→command: lint→`npm run lint`, typecheck→`npm run typecheck`, build→`npm run build`, unit→`npm run test:unit`, bdd→`npm run test:bdd`), push the fix, re-watch CI, close the issue once green. Cap at 5 cycles.
+On any CI job failure: `gh issue create --label ci --title "<slug>: CI failure — <job name>" --body "<job output>\n\nRelated to #<tracking-issue>"`, spawn/`SendMessage` `Agent(subagent_type="bug-fixer")` with the job output and which local command reproduces it (map job→command: lint→`npm run lint`, typecheck→`npm run typecheck`, build→`npm run build`, unit→`npm run test:unit`, bdd→`npm run test:bdd`, format→`npm run format:check` (if it fails, the fix is `npm run format` to auto-fix, then re-run `format:check`), audit→`npm audit --omit=dev --audit-level=high`, e2e→`npm run test:e2e`, coverage-merge→`npm run test:coverage:merge` (must print a combined percentage ≥ the threshold in `.claude/STANDARDS.md`)), push the fix, re-watch CI, close the issue once green. Cap at 5 cycles.
 
 Once all CI jobs are green: `gh pr merge <pr-number> --squash --delete-branch`. This performs the merge (triggering CD) and deletes the remote branch — and if the current checkout is on `feature/<slug>`, `gh` also switches it back to `main` and deletes the local branch as part of the same command. So by Step 21, local cleanup is very often already done; treat it as the expected common case, not an edge case.
 

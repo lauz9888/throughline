@@ -59,7 +59,7 @@ export const test = base.extend({
       fs.mkdirSync(NYC_OUTPUT_DIR, { recursive: true });
       fs.writeFileSync(
         path.join(NYC_OUTPUT_DIR, `${crypto.randomUUID()}.json`),
-        JSON.stringify(map.toJSON())
+        JSON.stringify(map.toJSON()),
       );
     }
   },

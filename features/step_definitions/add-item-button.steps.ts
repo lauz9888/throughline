@@ -21,7 +21,7 @@ When('the add-item button is clicked', function (this: World) {
 
 When('the Escape key is pressed', function (this: World) {
   this.document.dispatchEvent(
-    new this.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+    new this.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
   );
 });
 
@@ -50,24 +50,24 @@ Then(
   function (this: World, attribute: string, expected: string) {
     const button = getButton(this);
     assert.equal(button.getAttribute(attribute), expected);
-  }
+  },
 );
 
-Then('the add-item menu contains the following menu items in order:', function (
-  this: World,
-  dataTable: DataTable
-) {
-  const menu = getMenu(this);
-  const expectedLabels = dataTable.raw().map((row) => row[0]);
-  const items = Array.from(menu.querySelectorAll('[role="menuitem"]'));
-  assert.equal(
-    items.length,
-    expectedLabels.length,
-    `expected exactly ${expectedLabels.length} menu items, got ${items.length}`
-  );
-  const actualLabels = items.map((item) => item.textContent);
-  assert.deepEqual(actualLabels, expectedLabels);
-});
+Then(
+  'the add-item menu contains the following menu items in order:',
+  function (this: World, dataTable: DataTable) {
+    const menu = getMenu(this);
+    const expectedLabels = dataTable.raw().map((row) => row[0]);
+    const items = Array.from(menu.querySelectorAll('[role="menuitem"]'));
+    assert.equal(
+      items.length,
+      expectedLabels.length,
+      `expected exactly ${expectedLabels.length} menu items, got ${items.length}`,
+    );
+    const actualLabels = items.map((item) => item.textContent);
+    assert.deepEqual(actualLabels, expectedLabels);
+  },
+);
 
 Then('focus is on the add-item button', function (this: World) {
   const button = getButton(this);

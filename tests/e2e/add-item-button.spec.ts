@@ -29,7 +29,7 @@ test.describe('add item button', () => {
       expect(box!.y).toBeLessThan(100);
 
       const borderRadius = await button.evaluate((el) =>
-        parseFloat(getComputedStyle(el).borderRadius)
+        parseFloat(getComputedStyle(el).borderRadius),
       );
       expect(borderRadius).toBeGreaterThan(0);
       expect(borderRadius).toBeLessThan(22);

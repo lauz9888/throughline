@@ -19,7 +19,13 @@ Paths to `requirements.md` and `design.md`.
 4. **Testability** — each requirement's design change is concretely testable at the layer the "Test impact" section assigns it to (unit vs BDD vs e2e), and that assignment is sensible (e.g. pure logic → unit, user-facing behavior/flows → BDD or e2e, not the reverse).
 5. **npm script contract** — the design explicitly accounts for `build`/`typecheck`/`lint`/`dev`/`test:unit`/`test:bdd`/`test:e2e`/`test:coverage:merge` existing or being added; flag it as a gap if silently assumed.
 6. **PWA/deployment correctness** — if the design touches the manifest, service worker, or GitHub Pages base path, sanity-check it won't break the deployed app.
-7. **Accessibility** — for any design touching UI/interactive elements: every accessibility requirement in `requirements.md` maps to a concrete design decision (semantic markup/ARIA, keyboard model, focus management) in the design's "Accessibility" section, not just asserted as "will be accessible"; and the "Test impact" section explicitly assigns a `jest-axe`/`@axe-core/playwright` WCAG scan to at least one layer for each new or changed UI surface. A UI change with no accessibility design decisions or no automated a11y scan assigned is a gap, same as an uncovered functional requirement.
+7. **Accessibility** — for any design touching UI/interactive elements: every accessibility requirement in `requirements.md` maps to a concrete design decision (semantic markup/ARIA, keyboard model, focus management) in the design's "Accessibility" section, not just asserted as "will be accessible"; and the "Test impact" section explicitly assigns a `jest-axe`/`@axe-core/playwright` WCAG scan, per the WCAG scope defined in `.claude/STANDARDS.md`, to at least one layer for each new or changed UI surface. A UI change with no accessibility design decisions or no automated a11y scan assigned is a gap, same as an uncovered functional requirement. Note also: the coverage threshold checked in `qa-reviewer.md`'s output is the one defined in `.claude/STANDARDS.md`, not a value re-derived here.
+8. **Architecture Decision Records** — if the design introduces a new dependency, a new
+   framework/pattern, or a state-management approach (per `docs/adr/README.md`'s trigger list),
+   confirm a corresponding `docs/adr/NNNN-short-slug.md` file is included in the design's file
+   changes. A design that meets that bar with no ADR is a gap — flag it in `FEEDBACK`, the same
+   way a missing requirement-coverage entry or a missing WCAG scan is a gap, not a stylistic
+   nitpick to let slide.
 
 ## Ending your turn
 
