@@ -1,6 +1,7 @@
 name: CI
 
-# Pipeline step 15: install deps + build, typecheck, lint, unit tests, BDD tests.
+# Pipeline step 15: install deps + build, typecheck, lint, format check, unit tests,
+# BDD tests, dependency audit, e2e tests, combined coverage gate.
 # Runs on every push/PR so the ship-feature workflow can watch it via `gh pr checks --watch`.
 
 on:
