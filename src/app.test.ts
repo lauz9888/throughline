@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { axe } from 'jest-axe';
 import { renderApp, ADD_ITEM_TYPES } from './app';
 
@@ -122,4 +122,58 @@ describe('renderApp', () => {
       root.remove();
     }
   });
+});
+
+describe('renderApp — Aspiration modal wiring', () => {
+  afterEach(() => {
+    // The modal portals to document.body (a sibling of root, not a descendant), so its DOM
+    // must be cleaned up here explicitly rather than by removing root alone.
+    document.body.innerHTML = '';
+    document.body.inert = false;
+  });
+
+  function openMenuAndClickItem(root: HTMLElement, label: string): void {
+    root.querySelector<HTMLButtonElement>('.add-item-button')!.click();
+    const items = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
+    const item = items.find((menuItem) => menuItem.textContent === label);
+    if (!item) throw new Error(`No menu item found with label "${label}"`);
+    item.click();
+  }
+
+  it('opens the Aspiration modal (portaled into document.body) when "Aspiration" is selected from the add-item menu', () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+
+    renderApp(root);
+    openMenuAndClickItem(root, 'Aspiration');
+
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    const labelledBy = dialog!.getAttribute('aria-labelledby');
+    expect(document.getElementById(labelledBy!)?.textContent).toBe('Create Aspiration');
+  });
+
+  it('does not open a second dialog when "Aspiration" is selected twice in a row (menu re-opened between clicks)', () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+
+    renderApp(root);
+    openMenuAndClickItem(root, 'Aspiration');
+    openMenuAndClickItem(root, 'Aspiration');
+
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+  });
+
+  it.each(['Goal', 'Milestone', 'Task', 'Habit'])(
+    'does not open any dialog when "%s" is selected (still unwired)',
+    (label) => {
+      const root = document.createElement('div');
+      document.body.append(root);
+
+      renderApp(root);
+      openMenuAndClickItem(root, label);
+
+      expect(document.querySelector('[role="dialog"]')).toBeNull();
+    },
+  );
 });

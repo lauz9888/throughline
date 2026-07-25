@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { initAddItemMenu } from './add-item-menu';
 
 const ITEM_LABELS = ['Aspiration', 'Goal', 'Milestone', 'Task', 'Habit'];
@@ -154,5 +154,38 @@ describe('initAddItemMenu', () => {
 
     expect(fixture.menu.hidden).toBe(false);
     expect(fixture.button.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it("invokes onItemSelect with the clicked item's label after the existing close/refocus behavior", () => {
+    const onItemSelect = vi.fn();
+    initAddItemMenu({ button: fixture.button, menu: fixture.menu, onItemSelect });
+
+    fixture.button.click();
+    fixture.items[0]!.click(); // "Aspiration"
+
+    expect(onItemSelect).toHaveBeenCalledTimes(1);
+    expect(onItemSelect).toHaveBeenCalledWith('Aspiration');
+    expect(fixture.menu.hidden).toBe(true);
+    expect(fixture.button.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(fixture.button);
+  });
+
+  it("invokes onItemSelect with a different item's label, confirming the callback is generic and not hardcoded to Aspiration", () => {
+    const onItemSelect = vi.fn();
+    initAddItemMenu({ button: fixture.button, menu: fixture.menu, onItemSelect });
+
+    fixture.button.click();
+    fixture.items[1]!.click(); // "Goal"
+
+    expect(onItemSelect).toHaveBeenCalledWith('Goal');
+  });
+
+  it('does not throw when onItemSelect is omitted (existing behavior preserved)', () => {
+    initAddItemMenu({ button: fixture.button, menu: fixture.menu });
+
+    fixture.button.click();
+
+    expect(() => fixture.items[0]!.click()).not.toThrow();
+    expect(fixture.menu.hidden).toBe(true);
   });
 });

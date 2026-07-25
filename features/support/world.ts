@@ -7,7 +7,9 @@ export class World extends CucumberWorld {
 
   constructor(options: IWorldOptions) {
     super(options);
-    this.dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>');
+    this.dom = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', {
+      url: 'http://localhost/',
+    });
     this.document = this.dom.window.document;
   }
 }
