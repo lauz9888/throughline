@@ -77,6 +77,7 @@ creation) or any implementation work began — zero design-review findings survi
 implementation.
 
 Notable design decisions, per the requirement-coverage map:
+
 - Prettier's config is **explicit**, not zero-config defaults — real Prettier defaults
   (`printWidth: 80`, double quotes) differ from what the existing codebase already follows by
   hand (100-width, single-quote), so `.prettierrc` pins those values deliberately.
@@ -100,11 +101,12 @@ impact" table, every one of the 16 requirements is either a config/CI/doc/pipeli
 with no test surface (verified by the CI job itself succeeding, or by manual review that the prose
 is accurate — not by a Vitest/Cucumber/Playwright test), or, for the one item that could touch
 code (`noUncheckedIndexedAccess`), a type-only fix with zero behavior change, verified by
-`npm run typecheck` and the *existing* `src/add-item-menu.test.ts` suite passing unchanged rather
+`npm run typecheck` and the _existing_ `src/add-item-menu.test.ts` suite passing unchanged rather
 than a new test.
 
 This "no new tests needed" conclusion was independently confirmed by all three test-author agents
 during Step 3, per `state.md`:
+
 - **unit-test-author**: no new unit-testable behavior; item 8 is `tsc`-only and invisible to Vitest.
 - **bdd-test-author**: no new user-observable behavior.
 - **e2e-test-author**: no new or altered UI surface or user flow.
@@ -132,7 +134,7 @@ were required to (and did) pass unchanged after the Prettier reformat and the `n
 type fix.
 
 One indirect strengthening: items 11–12 (the new `.claude/STANDARDS.md` and the six agent files
-that now reference it) make the *mechanism* enforcing WCAG 2.1 AA on all future UI work more
+that now reference it) make the _mechanism_ enforcing WCAG 2.1 AA on all future UI work more
 maintainable — the WCAG tag scope was previously a literal duplicated across four files; a future
 change to the required conformance level now only requires editing one file.
 
@@ -158,8 +160,8 @@ categories:
 - **tsconfig strictness fix**: 5 non-null-assertion sites in `src/add-item-menu.test.ts`
   (`noUncheckedIndexedAccess` fallout).
 - **Ship-feature pipeline-definition updates**: `.claude/agents/{requirements-analyst,
-  solution-designer,solution-reviewer,unit-test-author,e2e-test-author,qa-reviewer,
-  docs-updater}.md` and `.claude/skills/ship-feature/SKILL.md` — canonical-standards references,
+solution-designer,solution-reviewer,unit-test-author,e2e-test-author,qa-reviewer,
+docs-updater}.md` and `.claude/skills/ship-feature/SKILL.md` — canonical-standards references,
   `qa-reviewer`'s new security-hygiene step and `STATUS: security-gap` routing, Step 12/17 updates.
 - **Docs**: `docs/adr/README.md` and `docs/adr/0001-adopt-prettier-for-formatting.md` (new),
   `README.md` (workflow section and npm-script-contract table).
@@ -185,11 +187,11 @@ required to pass unchanged.
 All bug/issue activity this run occurred in a single stage — **design review (Step 3)** — with
 zero bugs raised at any later stage:
 
-| # | Stage/label | Title area | Status |
-|---|---|---|---|
-| #26 | `design` | Design-review discrepancy 1 (Step 3, cycle 1) | Closed — "Resolved in updated design" |
-| #27 | `design` | Design-review discrepancy 2 (Step 3, cycle 1) | Closed — "Resolved in updated design" |
-| #28 | `design` | Design-review discrepancy 3 (Step 3, cycle 1) | Closed — "Resolved in updated design" |
+| #   | Stage/label | Title area                                    | Status                                |
+| --- | ----------- | --------------------------------------------- | ------------------------------------- |
+| #26 | `design`    | Design-review discrepancy 1 (Step 3, cycle 1) | Closed — "Resolved in updated design" |
+| #27 | `design`    | Design-review discrepancy 2 (Step 3, cycle 1) | Closed — "Resolved in updated design" |
+| #28 | `design`    | Design-review discrepancy 3 (Step 3, cycle 1) | Closed — "Resolved in updated design" |
 
 All three were filed against tracking issue #25 (body text "Related to #25"), opened by the first
 `solution-reviewer` pass (`STATUS: changes-requested`) and closed once the second, fresh
