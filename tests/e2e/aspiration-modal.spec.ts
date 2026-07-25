@@ -120,11 +120,16 @@ test.describe('create aspiration modal', () => {
     // at the unit layer (see `src/aspiration-modal.test.ts`'s "traps focus" test).
     await page.getByLabel('Title', { exact: true }).fill('Non-empty title');
 
-    // Focus starts on Title. Tab forward through Description, Reason, and
-    // the Goals radio (the only tab stop in the Goals/Habits group while
-    // neither is checked yet), landing on Save.
+    // Focus starts on Title. Tab forward through each field's info-icon disclosure
+    // button (now a real, focusable tab stop of its own — see Requirement 2's
+    // click-to-toggle tooltip behavior) followed by its field, then the Goals radio
+    // (the only tab stop in the Goals/Habits group while neither is checked yet),
+    // landing on Save.
+    await page.keyboard.press('Tab'); // Description info icon
     await page.keyboard.press('Tab'); // Description
+    await page.keyboard.press('Tab'); // Reason info icon
     await page.keyboard.press('Tab'); // Reason
+    await page.keyboard.press('Tab'); // Links info icon
     await page.keyboard.press('Tab'); // Goals radio
     await page.keyboard.press('Tab'); // Save
     await expect(page.getByRole('button', { name: 'Save' })).toBeFocused();
@@ -187,6 +192,79 @@ test.describe('create aspiration modal', () => {
     });
     expect(outline.outlineStyle).not.toBe('none');
     expect(outline.outlineColor).toBe('rgb(26, 26, 26)');
+  });
+
+  test('the Title tooltip text is only revealed by clicking its info icon, not by hovering or focusing the field, and clicking the icon again hides it (Requirement 2)', async ({
+    page,
+  }) => {
+    await page.goto('./');
+    await openAspirationModal(page);
+
+    // The tooltip text is always present in the accessibility tree (via aria-describedby)
+    // but only visually revealed once its `--visible` modifier class is toggled on — assert
+    // against that class directly rather than Playwright's `toBeVisible`/`toBeHidden`, since
+    // the visually-hidden-but-in-the-a11y-tree CSS technique used here (a 1x1px clipped box,
+    // not `display: none`) is intentionally still "visible" by Playwright's own actionability
+    // definition.
+    const titleTooltipText = page.locator('#aspiration-field-title-tooltip');
+    const titleIcon = page.getByRole('button', { name: 'More information about Title' });
+
+    // Hovering/focusing the field alone must not reveal the tooltip.
+    await page.getByLabel('Title', { exact: true }).hover();
+    await page.getByLabel('Title', { exact: true }).focus();
+    await expect(titleTooltipText).not.toHaveClass(/modal__tooltip-text--visible/);
+
+    await expect(titleIcon).toHaveAttribute('aria-expanded', 'false');
+    await titleIcon.click();
+    await expect(titleTooltipText).toHaveClass(/modal__tooltip-text--visible/);
+    await expect(titleIcon).toHaveAttribute('aria-expanded', 'true');
+
+    await titleIcon.click();
+    await expect(titleTooltipText).not.toHaveClass(/modal__tooltip-text--visible/);
+    await expect(titleIcon).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('the tooltip can be opened and operated via keyboard (Enter/Space), and clicking elsewhere closes it (Requirement 2)', async ({
+    page,
+  }) => {
+    await page.goto('./');
+    await openAspirationModal(page);
+
+    // See the note in the previous test about asserting the `--visible` class directly
+    // instead of `toBeVisible`/`toBeHidden`.
+    const titleTooltipText = page.locator('#aspiration-field-title-tooltip');
+    const titleIcon = page.getByRole('button', { name: 'More information about Title' });
+
+    await titleIcon.focus();
+    await page.keyboard.press('Enter');
+    await expect(titleTooltipText).toHaveClass(/modal__tooltip-text--visible/);
+
+    // Clicking elsewhere (not the icon or the tooltip itself) closes it.
+    await page.getByRole('heading', { name: 'Create Aspiration' }).click();
+    await expect(titleTooltipText).not.toHaveClass(/modal__tooltip-text--visible/);
+
+    await titleIcon.focus();
+    await page.keyboard.press('Space');
+    await expect(titleTooltipText).toHaveClass(/modal__tooltip-text--visible/);
+
+    await page.keyboard.press('Escape');
+    await expect(titleTooltipText).not.toHaveClass(/modal__tooltip-text--visible/);
+    // Escape only closed the tooltip, not the whole modal.
+    await expect(page.getByRole('dialog', { name: 'Create Aspiration' })).toBeVisible();
+  });
+
+  test('the Title field remains associated with its description via aria-describedby regardless of the tooltip’s visible/hidden toggle state (Requirement 2)', async ({
+    page,
+  }) => {
+    await page.goto('./');
+    await openAspirationModal(page);
+
+    const titleInput = page.getByLabel('Title', { exact: true });
+    const describedById = await titleInput.getAttribute('aria-describedby');
+    expect(describedById).toBeTruthy();
+    await expect(page.locator(`#${describedById}`)).toHaveText(
+      /A short, memorable name for this aspiration/,
+    );
   });
 
   test('selecting Goals shows the empty-state message; selecting Habits swaps it and deselects Goals; re-selecting the checked radio deselects it', async ({
@@ -451,6 +529,21 @@ test.describe('create aspiration modal', () => {
   }) => {
     await page.goto('./');
     await openAspirationModal(page);
+
+    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test('the open modal with a tooltip toggled open via its info icon has no automatically detectable WCAG violations', async ({
+    page,
+  }) => {
+    await page.goto('./');
+    await openAspirationModal(page);
+
+    await page.getByRole('button', { name: 'More information about Title' }).click();
+    await expect(page.locator('#aspiration-field-title-tooltip')).toHaveClass(
+      /modal__tooltip-text--visible/,
+    );
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     expect(results.violations).toEqual([]);

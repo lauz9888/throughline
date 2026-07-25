@@ -254,10 +254,13 @@ body {
   display: none;
 }
 
-/* Tooltip / field-description affordance (readability item 2). The info icon is decorative
-   (aria-hidden, glyph drawn via ::before so it never contributes text to a label's/legend's
-   accessible name); the real accessible description is the field's `aria-describedby` target
-   below, which stays in the accessibility tree at all times regardless of visibility. */
+/* Tooltip / field-description affordance (readability item 2). The info icon is a real,
+   focusable, keyboard-operable button (own accessible name via aria-label, e.g. "More
+   information about Title") that toggles the visibility of its associated tooltip text on
+   click/Enter/Space — see the click-to-toggle wiring in src/aspiration-modal.ts. The glyph
+   itself is still drawn via ::before purely for visual decoration. Regardless of the toggle's
+   visual state, the real accessible description is the field's `aria-describedby` target below,
+   which stays in the accessibility tree at all times. */
 .modal__info {
   display: inline-flex;
   align-items: center;
@@ -265,11 +268,16 @@ body {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
+  padding: 0;
+  margin: 0;
   border-radius: 50%;
   border: 1.5px solid #5a2d8c;
+  background: none;
   color: #5a2d8c;
+  font: inherit;
   font-size: 0.6875rem;
   line-height: 1;
+  cursor: pointer;
 }
 
 .modal__info::before {
@@ -298,13 +306,12 @@ body {
   border: 0;
 }
 
-/* Revealed as a floating overlay (not pushed into normal flow) so that hovering/focusing a
-   field never shifts the position of sibling controls — a layout shift here would risk moving
-   a control out from under an in-progress pointer interaction. */
-.modal__field:hover .modal__tooltip-text,
-.modal__field:focus-within .modal__tooltip-text,
-.aspiration-modal__links:hover .modal__tooltip-text,
-.aspiration-modal__links:focus-within .modal__tooltip-text {
+/* Revealed as a floating overlay (not pushed into normal flow) so that toggling it never
+   shifts the position of sibling controls — a layout shift here would risk moving a control
+   out from under an in-progress pointer interaction. Shown only when its info icon button has
+   been explicitly activated (click, or Enter/Space while focused) — see the click-to-toggle
+   wiring in src/aspiration-modal.ts — not merely on hover/focus of the surrounding field. */
+.modal__tooltip-text--visible {
   position: absolute;
   top: 100%;
   left: 0;
@@ -345,7 +352,10 @@ body {
 }
 
 .modal__save:disabled {
-  background: #c9bda3;
+  /* Muted/desaturated version of the enabled #5a2d8c purple (not the old gold-ish
+     #c9bda3) so the disabled state reads as "purple, just muted" rather than looking
+     like an entirely different, unfinished color scheme. */
+  background: #b7a3cf;
   cursor: not-allowed;
 }
 
@@ -387,6 +397,7 @@ body {
 .modal__field input:focus-visible,
 .modal__field textarea:focus-visible,
 .aspiration-modal__link-option input:focus-visible,
+.modal__info:focus-visible,
 .modal__save:focus-visible,
 .modal__actions button:focus-visible {
   outline: 2px solid #1a1a1a;

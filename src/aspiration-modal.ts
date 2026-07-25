@@ -21,24 +21,30 @@ const REASON_TOOLTIP_TEXT =
 const LINKS_TOOLTIP_TEXT =
   'Optional. Link this aspiration to one of your existing Goals or Habits so they stay connected.';
 
-// A decorative "info" affordance shown next to a field's label. It carries no text content of
-// its own (the glyph is drawn via CSS `::before`) and is `aria-hidden`, so it never changes the
-// accessible name computed from the label/legend it sits inside/next to. The actual accessible
-// description lives in the `<span>` created by `createTooltipText` below and is wired up via
-// `aria-describedby` on the associated form control — that association works regardless of the
-// tooltip text's visibility, satisfying WCAG 2.1 AA without depending on the native `title`
-// attribute (which isn't reliably reachable via keyboard/screen reader).
-function createInfoIcon(doc: Document): HTMLSpanElement {
-  const icon = doc.createElement('span');
+// A real, focusable, keyboard-operable "info" control shown next to a field's label. It has its
+// own accessible name (e.g. "More information about Title") and reflects its disclosure state
+// via `aria-expanded`, since clicking it (or pressing Enter/Space while it's focused) toggles the
+// visibility of its associated tooltip text — see `wireTooltipIcon` below. The glyph itself is
+// still drawn via CSS `::before` and is purely decorative. Regardless of this toggle's visual
+// state, the actual accessible description lives in the `<span>` created by `createTooltipText`
+// below and is wired up via `aria-describedby` on the associated form control at all times —
+// satisfying WCAG 2.1 AA without depending on the native `title` attribute (which isn't reliably
+// reachable via keyboard/screen reader).
+function createInfoIcon(doc: Document, fieldLabel: string, tooltipId: string): HTMLButtonElement {
+  const icon = doc.createElement('button');
+  icon.type = 'button';
   icon.className = 'modal__info';
-  icon.setAttribute('aria-hidden', 'true');
+  icon.setAttribute('aria-label', `More information about ${fieldLabel}`);
+  icon.setAttribute('aria-expanded', 'false');
+  icon.setAttribute('aria-controls', tooltipId);
   return icon;
 }
 
 // The accessible description text for a field/group. Visually hidden (off-screen, not
-// `display: none`/`visibility: hidden`) until its field is hovered or focused — see
-// `.modal__tooltip-text` in `src/style.css` — but always present in the accessibility tree via
-// the `aria-describedby` reference set on the corresponding control(s).
+// `display: none`/`visibility: hidden`) until its info icon button is toggled on — see
+// `.modal__tooltip-text`/`.modal__tooltip-text--visible` in `src/style.css` — but always present
+// in the accessibility tree via the `aria-describedby` reference set on the corresponding
+// control(s), regardless of visibility.
 function createTooltipText(doc: Document, id: string, text: string): HTMLSpanElement {
   const tooltip = doc.createElement('span');
   tooltip.id = id;
@@ -72,6 +78,50 @@ export function initAspirationModal(elements: AspirationModalElements): {
   let confirmOverlay: HTMLElement | undefined;
   let confirmDialog: HTMLElement | undefined;
   let confirmFocusTrapCleanup: (() => void) | undefined;
+
+  // Tracks whichever single tooltip (info-icon disclosure) is currently toggled open, so that
+  // opening a new one closes any previously-open one, and so document-level click/Escape
+  // handling knows whether there's anything to close.
+  let openTooltip: { icon: HTMLButtonElement; text: HTMLElement } | undefined;
+
+  function showTooltip(icon: HTMLButtonElement, text: HTMLElement): void {
+    if (openTooltip && openTooltip.icon !== icon) hideTooltip();
+    text.classList.add('modal__tooltip-text--visible');
+    icon.setAttribute('aria-expanded', 'true');
+    openTooltip = { icon, text };
+  }
+
+  function hideTooltip(): void {
+    if (!openTooltip) return;
+    openTooltip.text.classList.remove('modal__tooltip-text--visible');
+    openTooltip.icon.setAttribute('aria-expanded', 'false');
+    openTooltip = undefined;
+  }
+
+  function toggleTooltip(icon: HTMLButtonElement, text: HTMLElement): void {
+    if (openTooltip && openTooltip.icon === icon) {
+      hideTooltip();
+    } else {
+      showTooltip(icon, text);
+    }
+  }
+
+  // Click-to-toggle: activating an info icon shows/hides its own tooltip text (closing any
+  // other open tooltip first). Native `<button>` semantics already fire this same `click` event
+  // for Enter/Space, so no separate keydown handling is needed for that part of Requirement 2.
+  function wireTooltipIcon(icon: HTMLButtonElement, text: HTMLElement): void {
+    icon.addEventListener('click', () => toggleTooltip(icon, text));
+  }
+
+  // Closes the currently-open tooltip when the user clicks anywhere outside its icon/text.
+  function handleDocumentClickForTooltip(event: MouseEvent): void {
+    if (!openTooltip) return;
+    const target = event.target as Node | null;
+    if (target && (openTooltip.icon.contains(target) || openTooltip.text.contains(target))) {
+      return;
+    }
+    hideTooltip();
+  }
 
   function isDirty(): boolean {
     return (
@@ -122,6 +172,13 @@ export function initAspirationModal(elements: AspirationModalElements): {
   function handleDocumentKeydown(event: KeyboardEvent): void {
     if (event.key !== 'Escape') return;
     event.preventDefault();
+    // Escape closes the innermost open thing first: an open tooltip disclosure takes
+    // precedence over the confirm prompt/modal itself, so it takes a second Escape (or a
+    // click elsewhere) to progress to closing the confirm prompt/modal.
+    if (openTooltip) {
+      hideTooltip();
+      return;
+    }
     if (confirmOpen) {
       closeConfirmReturn();
     } else {
@@ -220,6 +277,8 @@ export function initAspirationModal(elements: AspirationModalElements): {
 
   function closeAndTeardown(): void {
     doc.removeEventListener('keydown', handleDocumentKeydown);
+    doc.removeEventListener('click', handleDocumentClickForTooltip);
+    openTooltip = undefined;
     focusTrapCleanup?.();
     focusTrapCleanup = undefined;
     overlay.remove();
@@ -260,7 +319,8 @@ export function initAspirationModal(elements: AspirationModalElements): {
     const titleLabel = doc.createElement('label');
     titleLabel.setAttribute('for', 'aspiration-field-title');
     titleLabel.textContent = 'Title';
-    titleLabelRow.append(titleLabel, createInfoIcon(doc));
+    const titleIcon = createInfoIcon(doc, 'Title', 'aspiration-field-title-tooltip');
+    titleLabelRow.append(titleLabel, titleIcon);
     titleInput = doc.createElement('input');
     titleInput.id = 'aspiration-field-title';
     titleInput.type = 'text';
@@ -281,7 +341,12 @@ export function initAspirationModal(elements: AspirationModalElements): {
     const descriptionLabel = doc.createElement('label');
     descriptionLabel.setAttribute('for', 'aspiration-field-description');
     descriptionLabel.textContent = 'Description';
-    descriptionLabelRow.append(descriptionLabel, createInfoIcon(doc));
+    const descriptionIcon = createInfoIcon(
+      doc,
+      'Description',
+      'aspiration-field-description-tooltip',
+    );
+    descriptionLabelRow.append(descriptionLabel, descriptionIcon);
     descriptionInput = doc.createElement('textarea');
     descriptionInput.id = 'aspiration-field-description';
     descriptionInput.setAttribute('aria-describedby', 'aspiration-field-description-tooltip');
@@ -299,7 +364,8 @@ export function initAspirationModal(elements: AspirationModalElements): {
     const reasonLabel = doc.createElement('label');
     reasonLabel.setAttribute('for', 'aspiration-field-reason');
     reasonLabel.textContent = 'Reason';
-    reasonLabelRow.append(reasonLabel, createInfoIcon(doc));
+    const reasonIcon = createInfoIcon(doc, 'Reason', 'aspiration-field-reason-tooltip');
+    reasonLabelRow.append(reasonLabel, reasonIcon);
     reasonInput = doc.createElement('textarea');
     reasonInput.id = 'aspiration-field-reason';
     reasonInput.setAttribute('aria-describedby', 'aspiration-field-reason-tooltip');
@@ -316,7 +382,8 @@ export function initAspirationModal(elements: AspirationModalElements): {
     const linksInfoWrapper = doc.createElement('span');
     linksInfoWrapper.className = 'modal__info-wrapper';
     const linksTooltip = createTooltipText(doc, 'aspiration-links-tooltip', LINKS_TOOLTIP_TEXT);
-    linksInfoWrapper.append(createInfoIcon(doc), linksTooltip);
+    const linksIcon = createInfoIcon(doc, 'Links', 'aspiration-links-tooltip');
+    linksInfoWrapper.append(linksIcon, linksTooltip);
     linksLegend.append('Links', linksInfoWrapper);
     linksFieldset.setAttribute('aria-describedby', 'aspiration-links-tooltip');
 
@@ -380,6 +447,11 @@ export function initAspirationModal(elements: AspirationModalElements): {
       radio.addEventListener('change', handleLinkRadioChange);
     });
 
+    wireTooltipIcon(titleIcon, titleTooltip);
+    wireTooltipIcon(descriptionIcon, descriptionTooltip);
+    wireTooltipIcon(reasonIcon, reasonTooltip);
+    wireTooltipIcon(linksIcon, linksTooltip);
+
     closeButton.addEventListener('click', requestClose);
     overlay.addEventListener('click', handleOverlayClick);
     saveButton.addEventListener('click', handleSave);
@@ -390,6 +462,7 @@ export function initAspirationModal(elements: AspirationModalElements): {
     isOpen = true;
     confirmOpen = false;
     selectedLinkType = null;
+    openTooltip = undefined;
 
     buildModal();
     doc.body.append(overlay);
@@ -397,12 +470,15 @@ export function initAspirationModal(elements: AspirationModalElements): {
 
     focusTrapCleanup = createFocusTrap(dialog);
     doc.addEventListener('keydown', handleDocumentKeydown);
+    doc.addEventListener('click', handleDocumentClickForTooltip);
 
     titleInput.focus();
   }
 
   function destroy(): void {
     doc.removeEventListener('keydown', handleDocumentKeydown);
+    doc.removeEventListener('click', handleDocumentClickForTooltip);
+    openTooltip = undefined;
     if (isOpen) {
       confirmFocusTrapCleanup?.();
       confirmFocusTrapCleanup = undefined;

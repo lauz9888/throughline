@@ -440,6 +440,105 @@ describe('initAspirationModal', () => {
     expect(document.activeElement).toBe(saveButton);
   });
 
+  it('the Title field is always associated with its description via aria-describedby, whether or not the tooltip is toggled open (Requirement 2)', () => {
+    const { modal } = setup();
+
+    modal.open();
+
+    const dialog = getDialog();
+    const titleInput = dialog.querySelector<HTMLInputElement>('#aspiration-field-title')!;
+    const tooltipId = titleInput.getAttribute('aria-describedby');
+    expect(tooltipId).toBeTruthy();
+    expect(document.getElementById(tooltipId!)?.textContent).toContain(
+      'A short, memorable name for this aspiration',
+    );
+  });
+
+  it('the Title info icon is a focusable button with an accessible name, hidden until clicked, and toggles on click (Requirement 2)', () => {
+    const { modal } = setup();
+
+    modal.open();
+
+    const dialog = getDialog();
+    const titleIcon = dialog.querySelector<HTMLButtonElement>('.modal__field .modal__info')!;
+    const tooltipId = titleIcon.getAttribute('aria-controls')!;
+    const tooltipText = document.getElementById(tooltipId)!;
+
+    expect(titleIcon.tagName).toBe('BUTTON');
+    expect(titleIcon.getAttribute('aria-label')).toBe('More information about Title');
+    expect(titleIcon.getAttribute('aria-expanded')).toBe('false');
+    expect(tooltipText.classList.contains('modal__tooltip-text--visible')).toBe(false);
+
+    titleIcon.click();
+
+    expect(titleIcon.getAttribute('aria-expanded')).toBe('true');
+    expect(tooltipText.classList.contains('modal__tooltip-text--visible')).toBe(true);
+
+    titleIcon.click();
+
+    expect(titleIcon.getAttribute('aria-expanded')).toBe('false');
+    expect(tooltipText.classList.contains('modal__tooltip-text--visible')).toBe(false);
+  });
+
+  it('merely hovering or focusing the Title field does not reveal the tooltip text (Requirement 2)', () => {
+    const { modal } = setup();
+
+    modal.open();
+
+    const dialog = getDialog();
+    const titleInput = dialog.querySelector<HTMLInputElement>('#aspiration-field-title')!;
+    const tooltipId = titleInput.getAttribute('aria-describedby')!;
+    const tooltipText = document.getElementById(tooltipId)!;
+
+    titleInput.focus();
+    titleInput.dispatchEvent(new Event('focus', { bubbles: true }));
+    titleInput.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+    expect(tooltipText.classList.contains('modal__tooltip-text--visible')).toBe(false);
+  });
+
+  it('opening a second tooltip closes the first, and clicking outside any tooltip closes it (Requirement 2)', () => {
+    const { modal } = setup();
+
+    modal.open();
+
+    const dialog = getDialog();
+    const titleIcon = dialog.querySelector<HTMLButtonElement>('.modal__field .modal__info')!;
+    const descriptionIcon = dialog.querySelectorAll<HTMLButtonElement>('.modal__info')[1]!;
+    const titleTooltip = document.getElementById(titleIcon.getAttribute('aria-controls')!)!;
+    const descriptionTooltip = document.getElementById(
+      descriptionIcon.getAttribute('aria-controls')!,
+    )!;
+
+    titleIcon.click();
+    expect(titleTooltip.classList.contains('modal__tooltip-text--visible')).toBe(true);
+
+    descriptionIcon.click();
+    expect(titleTooltip.classList.contains('modal__tooltip-text--visible')).toBe(false);
+    expect(descriptionTooltip.classList.contains('modal__tooltip-text--visible')).toBe(true);
+
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(descriptionTooltip.classList.contains('modal__tooltip-text--visible')).toBe(false);
+  });
+
+  it('pressing Escape while a tooltip is open closes only the tooltip, not the modal (Requirement 2)', () => {
+    const { modal } = setup();
+
+    modal.open();
+
+    const dialog = getDialog();
+    const titleIcon = dialog.querySelector<HTMLButtonElement>('.modal__field .modal__info')!;
+    const titleTooltip = document.getElementById(titleIcon.getAttribute('aria-controls')!)!;
+
+    titleIcon.click();
+    expect(titleTooltip.classList.contains('modal__tooltip-text--visible')).toBe(true);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    expect(titleTooltip.classList.contains('modal__tooltip-text--visible')).toBe(false);
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  });
+
   it('has no automatically detectable WCAG violations with the modal freshly opened and empty', async () => {
     const { modal } = setup();
 
@@ -474,6 +573,20 @@ describe('initAspirationModal', () => {
     const titleInput = dialog.querySelector<HTMLInputElement>('#aspiration-field-title')!;
     setValue(titleInput, 'Unsaved title');
     dialog.querySelector<HTMLButtonElement>('.modal__close')!.click();
+
+    const results = await axe(document.body, {
+      runOnly: { type: 'tag', values: WCAG_TAGS },
+      rules: { 'color-contrast': { enabled: false } },
+    });
+    expect(results).toHaveNoViolations();
+  });
+
+  it('has no automatically detectable WCAG violations with a tooltip toggled open via its info icon (Requirement 2)', async () => {
+    const { modal } = setup();
+
+    modal.open();
+    const dialog = getDialog();
+    dialog.querySelector<HTMLButtonElement>('.modal__field .modal__info')!.click();
 
     const results = await axe(document.body, {
       runOnly: { type: 'tag', values: WCAG_TAGS },
