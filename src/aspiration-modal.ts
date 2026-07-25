@@ -12,6 +12,41 @@ const BLURB_TEXT =
   "concrete goals, for example 'live a healthy life', 'have a successful and fulfilling " +
   "career', or 'maintain healthy and loving relationships'.";
 
+const TITLE_TOOLTIP_TEXT =
+  "A short, memorable name for this aspiration — for example 'Live a healthy life'.";
+const DESCRIPTION_TOOLTIP_TEXT =
+  'Optional. Add more detail about what this aspiration means to you day to day.';
+const REASON_TOOLTIP_TEXT =
+  'Optional. Explain why this aspiration matters to you — this can help keep you motivated.';
+const LINKS_TOOLTIP_TEXT =
+  'Optional. Link this aspiration to one of your existing Goals or Habits so they stay connected.';
+
+// A decorative "info" affordance shown next to a field's label. It carries no text content of
+// its own (the glyph is drawn via CSS `::before`) and is `aria-hidden`, so it never changes the
+// accessible name computed from the label/legend it sits inside/next to. The actual accessible
+// description lives in the `<span>` created by `createTooltipText` below and is wired up via
+// `aria-describedby` on the associated form control — that association works regardless of the
+// tooltip text's visibility, satisfying WCAG 2.1 AA without depending on the native `title`
+// attribute (which isn't reliably reachable via keyboard/screen reader).
+function createInfoIcon(doc: Document): HTMLSpanElement {
+  const icon = doc.createElement('span');
+  icon.className = 'modal__info';
+  icon.setAttribute('aria-hidden', 'true');
+  return icon;
+}
+
+// The accessible description text for a field/group. Visually hidden (off-screen, not
+// `display: none`/`visibility: hidden`) until its field is hovered or focused — see
+// `.modal__tooltip-text` in `src/style.css` — but always present in the accessibility tree via
+// the `aria-describedby` reference set on the corresponding control(s).
+function createTooltipText(doc: Document, id: string, text: string): HTMLSpanElement {
+  const tooltip = doc.createElement('span');
+  tooltip.id = id;
+  tooltip.className = 'modal__tooltip-text';
+  tooltip.textContent = text;
+  return tooltip;
+}
+
 export function initAspirationModal(elements: AspirationModalElements): {
   open: () => void;
   destroy: () => void;
@@ -220,38 +255,70 @@ export function initAspirationModal(elements: AspirationModalElements): {
 
     const titleField = doc.createElement('div');
     titleField.className = 'modal__field';
+    const titleLabelRow = doc.createElement('div');
+    titleLabelRow.className = 'modal__field-label-row';
     const titleLabel = doc.createElement('label');
     titleLabel.setAttribute('for', 'aspiration-field-title');
     titleLabel.textContent = 'Title';
+    titleLabelRow.append(titleLabel, createInfoIcon(doc));
     titleInput = doc.createElement('input');
     titleInput.id = 'aspiration-field-title';
     titleInput.type = 'text';
     titleInput.required = true;
     titleInput.setAttribute('aria-required', 'true');
-    titleField.append(titleLabel, titleInput);
+    titleInput.setAttribute('aria-describedby', 'aspiration-field-title-tooltip');
+    const titleTooltip = createTooltipText(
+      doc,
+      'aspiration-field-title-tooltip',
+      TITLE_TOOLTIP_TEXT,
+    );
+    titleField.append(titleLabelRow, titleInput, titleTooltip);
 
     const descriptionField = doc.createElement('div');
     descriptionField.className = 'modal__field';
+    const descriptionLabelRow = doc.createElement('div');
+    descriptionLabelRow.className = 'modal__field-label-row';
     const descriptionLabel = doc.createElement('label');
     descriptionLabel.setAttribute('for', 'aspiration-field-description');
     descriptionLabel.textContent = 'Description';
+    descriptionLabelRow.append(descriptionLabel, createInfoIcon(doc));
     descriptionInput = doc.createElement('textarea');
     descriptionInput.id = 'aspiration-field-description';
-    descriptionField.append(descriptionLabel, descriptionInput);
+    descriptionInput.setAttribute('aria-describedby', 'aspiration-field-description-tooltip');
+    const descriptionTooltip = createTooltipText(
+      doc,
+      'aspiration-field-description-tooltip',
+      DESCRIPTION_TOOLTIP_TEXT,
+    );
+    descriptionField.append(descriptionLabelRow, descriptionInput, descriptionTooltip);
 
     const reasonField = doc.createElement('div');
     reasonField.className = 'modal__field';
+    const reasonLabelRow = doc.createElement('div');
+    reasonLabelRow.className = 'modal__field-label-row';
     const reasonLabel = doc.createElement('label');
     reasonLabel.setAttribute('for', 'aspiration-field-reason');
     reasonLabel.textContent = 'Reason';
+    reasonLabelRow.append(reasonLabel, createInfoIcon(doc));
     reasonInput = doc.createElement('textarea');
     reasonInput.id = 'aspiration-field-reason';
-    reasonField.append(reasonLabel, reasonInput);
+    reasonInput.setAttribute('aria-describedby', 'aspiration-field-reason-tooltip');
+    const reasonTooltip = createTooltipText(
+      doc,
+      'aspiration-field-reason-tooltip',
+      REASON_TOOLTIP_TEXT,
+    );
+    reasonField.append(reasonLabelRow, reasonInput, reasonTooltip);
 
     const linksFieldset = doc.createElement('fieldset');
     linksFieldset.className = 'aspiration-modal__links';
     const linksLegend = doc.createElement('legend');
-    linksLegend.textContent = 'Links';
+    const linksInfoWrapper = doc.createElement('span');
+    linksInfoWrapper.className = 'modal__info-wrapper';
+    const linksTooltip = createTooltipText(doc, 'aspiration-links-tooltip', LINKS_TOOLTIP_TEXT);
+    linksInfoWrapper.append(createInfoIcon(doc), linksTooltip);
+    linksLegend.append('Links', linksInfoWrapper);
+    linksFieldset.setAttribute('aria-describedby', 'aspiration-links-tooltip');
 
     const goalsOption = doc.createElement('div');
     goalsOption.className = 'aspiration-modal__link-option';
@@ -260,6 +327,7 @@ export function initAspirationModal(elements: AspirationModalElements): {
     goalsRadio.id = 'aspiration-link-goals';
     goalsRadio.name = 'aspiration-link-type';
     goalsRadio.value = 'Goals';
+    goalsRadio.setAttribute('aria-describedby', 'aspiration-links-tooltip');
     const goalsLabel = doc.createElement('label');
     goalsLabel.setAttribute('for', 'aspiration-link-goals');
     goalsLabel.textContent = 'Goals';
@@ -272,6 +340,7 @@ export function initAspirationModal(elements: AspirationModalElements): {
     habitsRadio.id = 'aspiration-link-habits';
     habitsRadio.name = 'aspiration-link-type';
     habitsRadio.value = 'Habits';
+    habitsRadio.setAttribute('aria-describedby', 'aspiration-links-tooltip');
     const habitsLabel = doc.createElement('label');
     habitsLabel.setAttribute('for', 'aspiration-link-habits');
     habitsLabel.textContent = 'Habits';
