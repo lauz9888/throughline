@@ -2,7 +2,7 @@
   "name": "throughline",
   "private": true,
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "license": "MIT",
   "scripts": {
