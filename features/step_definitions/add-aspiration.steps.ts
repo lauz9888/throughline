@@ -158,7 +158,6 @@ Then('the blurb appears before the Title field in the modal', function (this: Wo
   const title = getField(this, 'Title');
   const position = blurb!.compareDocumentPosition(title);
   assert.ok(
-    // eslint-disable-next-line no-bitwise
     (position & this.dom.window.Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
     'expected the blurb to appear before the Title field',
   );
