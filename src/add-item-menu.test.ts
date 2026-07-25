@@ -156,7 +156,7 @@ describe('initAddItemMenu', () => {
     expect(fixture.button.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('invokes onItemSelect with the clicked item\'s label after the existing close/refocus behavior', () => {
+  it("invokes onItemSelect with the clicked item's label after the existing close/refocus behavior", () => {
     const onItemSelect = vi.fn();
     initAddItemMenu({ button: fixture.button, menu: fixture.menu, onItemSelect });
 
@@ -170,7 +170,7 @@ describe('initAddItemMenu', () => {
     expect(document.activeElement).toBe(fixture.button);
   });
 
-  it('invokes onItemSelect with a different item\'s label, confirming the callback is generic and not hardcoded to Aspiration', () => {
+  it("invokes onItemSelect with a different item's label, confirming the callback is generic and not hardcoded to Aspiration", () => {
     const onItemSelect = vi.fn();
     initAddItemMenu({ button: fixture.button, menu: fixture.menu, onItemSelect });
 

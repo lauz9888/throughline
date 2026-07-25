@@ -6,7 +6,7 @@ import { initAspirationModal } from './aspiration-modal';
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 const BLURB_TEXT =
-  "An aspiration is a long-term, potentially lifelong life direction — not necessarily a " +
+  'An aspiration is a long-term, potentially lifelong life direction — not necessarily a ' +
   "measurable, checkable goal. It's a guiding principle that shapes and motivates your more " +
   "concrete goals, for example 'live a healthy life', 'have a successful and fulfilling " +
   "career', or 'maintain healthy and loving relationships'.";
@@ -135,12 +135,10 @@ describe('initAspirationModal', () => {
     )!;
     const reasonInput = dialog.querySelector<HTMLTextAreaElement>('#aspiration-field-reason')!;
 
-    expect(dialog.querySelector('label[for="aspiration-field-title"]')?.textContent).toBe(
-      'Title',
+    expect(dialog.querySelector('label[for="aspiration-field-title"]')?.textContent).toBe('Title');
+    expect(dialog.querySelector('label[for="aspiration-field-description"]')?.textContent).toBe(
+      'Description',
     );
-    expect(
-      dialog.querySelector('label[for="aspiration-field-description"]')?.textContent,
-    ).toBe('Description');
     expect(dialog.querySelector('label[for="aspiration-field-reason"]')?.textContent).toBe(
       'Reason',
     );
@@ -325,9 +323,9 @@ describe('initAspirationModal', () => {
 
     expect(document.querySelector('[role="alertdialog"]')).toBeNull();
     const stillOpenDialog = getDialog();
-    expect(
-      stillOpenDialog.querySelector<HTMLInputElement>('#aspiration-field-title')!.value,
-    ).toBe('Unsaved title');
+    expect(stillOpenDialog.querySelector<HTMLInputElement>('#aspiration-field-title')!.value).toBe(
+      'Unsaved title',
+    );
     expect(document.activeElement).toBe(closeButton);
   });
 
@@ -400,9 +398,9 @@ describe('initAspirationModal', () => {
 
     expect(getAlertDialog()).toBeNull();
     const stillOpenDialog = getDialog();
-    expect(
-      stillOpenDialog.querySelector<HTMLInputElement>('#aspiration-field-title')!.value,
-    ).toBe('Unsaved title');
+    expect(stillOpenDialog.querySelector<HTMLInputElement>('#aspiration-field-title')!.value).toBe(
+      'Unsaved title',
+    );
   });
 
   it('moves focus to the Title field immediately after open() (Requirement 29)', () => {

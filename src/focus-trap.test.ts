@@ -83,7 +83,7 @@ describe('createFocusTrap', () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it('treats the checked radio in a same-name group as the group\'s tab stop, not the first one in DOM order', () => {
+  it("treats the checked radio in a same-name group as the group's tab stop, not the first one in DOM order", () => {
     document.body.innerHTML = '';
     const container = document.createElement('div');
 

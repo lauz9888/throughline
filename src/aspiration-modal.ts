@@ -7,7 +7,7 @@ export interface AspirationModalElements {
 }
 
 const BLURB_TEXT =
-  "An aspiration is a long-term, potentially lifelong life direction — not necessarily a " +
+  'An aspiration is a long-term, potentially lifelong life direction — not necessarily a ' +
   "measurable, checkable goal. It's a guiding principle that shapes and motivates your more " +
   "concrete goals, for example 'live a healthy life', 'have a successful and fulfilling " +
   "career', or 'maintain healthy and loving relationships'.";

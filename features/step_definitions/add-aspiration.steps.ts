@@ -161,46 +161,45 @@ Then('the blurb appears before the Title field in the modal', function (this: Wo
 
 // --- Fields ---
 
-Then("the aspiration modal has a required field labeled {string}", function (
-  this: World,
-  label: string,
-) {
-  const field = getField(this, label);
-  const associatedLabel = this.document.querySelector(`label[for="${field.id}"]`);
-  assert.ok(associatedLabel, `expected a <label for="${field.id}"> element to exist`);
-  assert.equal(associatedLabel!.textContent, label);
-  assert.notEqual(
-    field.getAttribute('required'),
-    null,
-    `expected the "${label}" field to have the required attribute`,
-  );
-  assert.equal(field.getAttribute('aria-required'), 'true');
-});
+Then(
+  'the aspiration modal has a required field labeled {string}',
+  function (this: World, label: string) {
+    const field = getField(this, label);
+    const associatedLabel = this.document.querySelector(`label[for="${field.id}"]`);
+    assert.ok(associatedLabel, `expected a <label for="${field.id}"> element to exist`);
+    assert.equal(associatedLabel!.textContent, label);
+    assert.notEqual(
+      field.getAttribute('required'),
+      null,
+      `expected the "${label}" field to have the required attribute`,
+    );
+    assert.equal(field.getAttribute('aria-required'), 'true');
+  },
+);
 
-Then("the aspiration modal has an optional field labeled {string}", function (
-  this: World,
-  label: string,
-) {
-  const field = getField(this, label);
-  const associatedLabel = this.document.querySelector(`label[for="${field.id}"]`);
-  assert.ok(associatedLabel, `expected a <label for="${field.id}"> element to exist`);
-  assert.equal(associatedLabel!.textContent, label);
-  assert.equal(
-    field.getAttribute('required'),
-    null,
-    `expected the "${label}" field not to be required`,
-  );
-});
+Then(
+  'the aspiration modal has an optional field labeled {string}',
+  function (this: World, label: string) {
+    const field = getField(this, label);
+    const associatedLabel = this.document.querySelector(`label[for="${field.id}"]`);
+    assert.ok(associatedLabel, `expected a <label for="${field.id}"> element to exist`);
+    assert.equal(associatedLabel!.textContent, label);
+    assert.equal(
+      field.getAttribute('required'),
+      null,
+      `expected the "${label}" field not to be required`,
+    );
+  },
+);
 
-When("{string} is entered into the aspiration modal's {string} field", function (
-  this: World,
-  text: string,
-  fieldName: string,
-) {
-  const field = getField(this, fieldName);
-  field.value = text;
-  field.dispatchEvent(new this.dom.window.Event('input', { bubbles: true }));
-});
+When(
+  "{string} is entered into the aspiration modal's {string} field",
+  function (this: World, text: string, fieldName: string) {
+    const field = getField(this, fieldName);
+    field.value = text;
+    field.dispatchEvent(new this.dom.window.Event('input', { bubbles: true }));
+  },
+);
 
 When("the aspiration modal's {string} field is cleared", function (this: World, fieldName: string) {
   const field = getField(this, fieldName);
@@ -208,14 +207,13 @@ When("the aspiration modal's {string} field is cleared", function (this: World, 
   field.dispatchEvent(new this.dom.window.Event('input', { bubbles: true }));
 });
 
-Then("the aspiration modal's {string} field contains {string}", function (
-  this: World,
-  fieldName: string,
-  expected: string,
-) {
-  const field = getField(this, fieldName);
-  assert.equal(field.value, expected);
-});
+Then(
+  "the aspiration modal's {string} field contains {string}",
+  function (this: World, fieldName: string, expected: string) {
+    const field = getField(this, fieldName);
+    assert.equal(field.value, expected);
+  },
+);
 
 // --- Save button ---
 
@@ -235,16 +233,15 @@ When("the aspiration modal's Save button is clicked", function (this: World) {
 
 // --- Links section ---
 
-Then('neither the {string} nor the {string} link radio button is selected', function (
-  this: World,
-  first: string,
-  second: string,
-) {
-  const firstRadio = getLinkRadio(this, first);
-  const secondRadio = getLinkRadio(this, second);
-  assert.equal(firstRadio.checked, false, `expected the "${first}" radio to be unselected`);
-  assert.equal(secondRadio.checked, false, `expected the "${second}" radio to be unselected`);
-});
+Then(
+  'neither the {string} nor the {string} link radio button is selected',
+  function (this: World, first: string, second: string) {
+    const firstRadio = getLinkRadio(this, first);
+    const secondRadio = getLinkRadio(this, second);
+    assert.equal(firstRadio.checked, false, `expected the "${first}" radio to be unselected`);
+    assert.equal(secondRadio.checked, false, `expected the "${second}" radio to be unselected`);
+  },
+);
 
 When('the {string} link radio button is clicked', function (this: World, label: string) {
   const radio = getLinkRadio(this, label);
@@ -266,14 +263,14 @@ Then('the links empty-state message is hidden', function (this: World) {
   assert.equal(message.hidden, true);
 });
 
-Then('the links empty-state message is visible with text {string}', function (
-  this: World,
-  expected: string,
-) {
-  const message = getLinksEmptyMessage(this);
-  assert.equal(message.hidden, false);
-  assert.equal(message.textContent, expected);
-});
+Then(
+  'the links empty-state message is visible with text {string}',
+  function (this: World, expected: string) {
+    const message = getLinksEmptyMessage(this);
+    assert.equal(message.hidden, false);
+    assert.equal(message.textContent, expected);
+  },
+);
 
 // --- Close / Escape / backdrop / confirmation prompt ---
 
@@ -326,14 +323,13 @@ Then(
   },
 );
 
-Then("the saved aspirations' titles are {string} and {string} in order", function (
-  this: World,
-  first: string,
-  second: string,
-) {
-  const records = readAspirations(this);
-  assert.deepEqual(
-    records.map((record) => record.title),
-    [first, second],
-  );
-});
+Then(
+  "the saved aspirations' titles are {string} and {string} in order",
+  function (this: World, first: string, second: string) {
+    const records = readAspirations(this);
+    assert.deepEqual(
+      records.map((record) => record.title),
+      [first, second],
+    );
+  },
+);
