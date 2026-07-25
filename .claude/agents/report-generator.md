@@ -19,7 +19,8 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
 4. Write `reports/<YYYY-MM-DD>-<slug>.md` with:
    - **Requirements** — summary from `requirements.md`
    - **Solution** — summary from `design.md`
-   - **Test changes** — the unit/BDD/e2e file lists from `state.md`, one line each on what they cover
+   - **Test changes** — the unit/BDD/e2e file lists from `state.md`, one line each on what they cover, noting which include an automated WCAG scan (`jest-axe`/`@axe-core/playwright`)
+   - **Accessibility** — one line per UI-facing requirement in `requirements.md` on how it's covered (design decision + automated scan), and a short list of any issues carrying the `accessibility` label (from the grouped bug list below) with their resolution
    - **Bugs raised** — grouped by stage/label, each with opened/closed timestamps and resolution summary (from the issue body/close comment)
    - **Time taken** — total, with the human-wait-time caveat above
 

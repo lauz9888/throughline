@@ -26,7 +26,9 @@ The user has explicitly pre-authorized this workflow to create branches, merge t
 
 **Continuing a subagent vs. spawning fresh.** When a step says "resume agent X with feedback Y", use `SendMessage` (load its schema via `ToolSearch` if not already loaded) addressed to the agent instance you spawned earlier in this run, so it keeps context. Only spawn a fresh `Agent` call the first time a role is needed in this run.
 
-**Bug tracking.** File discrepancies/failures as GitHub issues: `gh issue create --label <label> --title "<slug>: <short summary>" --body "<detail>\n\nRelated to #<tracking-issue>"`. Create labels once if missing (`gh label list`, then `gh label create <name> --color <hex>` for any absent): `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `manual-test`, `ci`. Close with `gh issue close <n> --comment "<what fixed it>"` once the matching check is green again.
+**Bug tracking.** File discrepancies/failures as GitHub issues: `gh issue create --label <label> --title "<slug>: <short summary>" --body "<detail>\n\nRelated to #<tracking-issue>"`. Create labels once if missing (`gh label list`, then `gh label create <name> --color <hex>` for any absent): `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `manual-test`, `ci`, `accessibility`. Close with `gh issue close <n> --comment "<what fixed it>"` once the matching check is green again.
+
+**Accessibility.** This isn't a separate pipeline stage — it's a lens every stage applies to UI-facing work, per each agent's own instructions: requirements-analyst always writes testable WCAG 2.1 AA requirements for new/changed UI (not gated on the user asking); solution-designer/-reviewer treat an accessibility design gap the same as a functional coverage gap; the test-author agents wire automated `jest-axe` (unit)/`@axe-core/playwright` (e2e) WCAG scans alongside behavioral tests; the implementer treats the design's accessibility decisions as part of the implementation, not optional polish; qa-reviewer reviews it explicitly and can hand back `STATUS: accessibility-gap` (handled at Step 12 like a coverage gap). Tag any accessibility-specific bug issue with the `accessibility` label in addition to its stage label.
 
 **Retry caps.** Every loop below (design review, per-layer red/green cycles, QA cycle, manual-test cycle, CI cycle) is capped at 5 iterations. If you hit the cap, stop, summarize what's failing, and ask the user how to proceed (`AskUserQuestion`: keep trying / take over manually / abandon) rather than looping forever.
 
@@ -90,11 +92,12 @@ Same pattern as Step 9, running `npm run test:e2e`, label `e2e-test`.
 
 ## Step 12 — QA review + coverage gate
 
-1. Spawn `Agent(subagent_type="qa-reviewer")` with the full diff (`git diff main...HEAD`), `design.md`, and `requirements.md`. It reviews best practice/readability/efficiency/maintainability/testability, sanity-checks against requirements, computes combined coverage (`npm run test:coverage:merge`), and makes any code-quality fixes directly.
-2. On `STATUS: coverage-gap` (combined coverage < 90%, listing which layer(s) need more cases): route back to the matching Step 5/6/7 author agent(s) to add coverage, then re-run Steps 9–11 for the affected layer(s), then re-spawn `qa-reviewer` fresh.
-3. On `STATUS: changes-made`: re-run the full Step 9–11 suites (safety net). Any failure follows the normal bug-fixer loop from those steps.
-4. On `STATUS: approved` (no changes needed, coverage ≥ 90%): move on.
-5. Cap the whole Step 12 cycle at 5 iterations.
+1. Spawn `Agent(subagent_type="qa-reviewer")` with the full diff (`git diff main...HEAD`), `design.md`, and `requirements.md`. It reviews best practice/readability/efficiency/maintainability/testability/accessibility, sanity-checks against requirements, computes combined coverage (`npm run test:coverage:merge`), and makes any code-quality/small-a11y fixes directly.
+2. On `STATUS: accessibility-gap` (a UI surface is missing an automated WCAG scan, or has a violation the reviewer couldn't fix directly): `gh issue create --label accessibility --label qa ...` for each finding, route back to the matching Step 5/6/7 test-author agent(s) (unit-test-author/e2e-test-author for the missing scan; solution-designer first if the finding implies a design gap, not just a missing test) to add coverage or request a design fix, then re-run Steps 9–11 for the affected layer(s), close the issue(s), then re-spawn `qa-reviewer` fresh.
+3. On `STATUS: coverage-gap` (combined coverage < 90%, listing which layer(s) need more cases): route back to the matching Step 5/6/7 author agent(s) to add coverage, then re-run Steps 9–11 for the affected layer(s), then re-spawn `qa-reviewer` fresh.
+4. On `STATUS: changes-made`: re-run the full Step 9–11 suites (safety net). Any failure follows the normal bug-fixer loop from those steps.
+5. On `STATUS: approved` (no changes needed, coverage ≥ 90%): move on.
+6. Cap the whole Step 12 cycle at 5 iterations.
 
 ## Step 13 — Manual test gate (human gate #2)
 

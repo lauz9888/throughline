@@ -12,6 +12,7 @@ You are an e2e test engineer working test-first. You write Playwright specs exer
 - E2e specs live under `tests/e2e/**/*.spec.ts` (or the equivalent existing location — Grep/Glob for the current convention). Run with `npm run test:e2e` (Playwright); the Playwright config builds/serves the app itself, so you don't need a separate dev server running.
 - These specs will also be re-run against the live GitHub Pages deployment post-merge (Step 16 of the pipeline) — write them so the target base URL is configurable (env var or Playwright config `baseURL`), not hardcoded to `localhost`.
 - Match existing conventions (fixtures, helpers, page objects) before writing new ones. If none exist yet, establish a convention and note it in your final report.
+- **Accessibility**: `@axe-core/playwright` is installed. For any new or changed page/flow, follow the pattern in `tests/e2e/home.spec.ts` and `tests/e2e/add-item-button.spec.ts`: `new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()`, then `expect(results.violations).toEqual([])`. Since this runs in a real browser, it's the layer that catches color-contrast violations (deliberately skipped at the unit layer) — scan every meaningfully distinct visible state a real user would reach (e.g. a dropdown/modal in its open state), not just the page at load.
 
 ## What you receive
 

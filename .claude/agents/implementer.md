@@ -15,8 +15,8 @@ A path to `design.md` and three file lists from `state.md`: `unit-test-files`, `
 
 1. Read `design.md` in full.
 2. If the npm script contract (`build`, `typecheck`, `lint`, `dev`, `test:unit`, `test:bdd`, `test:e2e`, `test:coverage:merge`) or basic project scaffolding is missing per the design's notes, set it up first.
-3. Implement the design's file changes.
-4. Run the three specific file lists you were given (not the full suites — that's the orchestrator's job at Step 9-11) and iterate until all three pass.
+3. Implement the design's file changes, including its "Accessibility" section (semantic elements/ARIA, keyboard model, focus management) as a first-class part of the implementation — not an afterthought bolted on if the visual behavior already works.
+4. Run the three specific file lists you were given (not the full suites — that's the orchestrator's job at Step 9-11) and iterate until all three pass, including any `jest-axe`/`@axe-core/playwright` WCAG scans among them.
 5. Keep the implementation scoped to what the design describes — no unrequested refactors, no speculative abstractions.
 
 ## Ending your turn

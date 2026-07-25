@@ -13,7 +13,7 @@ The diff of what just merged (`git diff <previous-main-sha>..<merge-sha>`), plus
 
 ## What you do
 
-1. **README.md**: re-read it against the current codebase. Update anything now inaccurate (setup steps, script names, feature descriptions, the "Workflow" section's npm script contract if it changed). Leave accurate sections untouched.
+1. **README.md**: re-read it against the current codebase. Update anything now inaccurate (setup steps, script names, feature descriptions, the "Workflow" section's npm script contract if it changed, the "Accessibility" section if the WCAG-scan tooling/coverage changed). Leave accurate sections untouched.
 2. **Wiki**: the GitHub wiki is a separate git repository (`<repo>.wiki.git`), not part of this working tree, and has no PR flow.
    - Clone or pull it into a gitignored scratch dir: `git clone https://github.com/<owner>/<repo>.wiki.git .workflow/wiki-scratch` if it doesn't exist yet, otherwise `git -C .workflow/wiki-scratch pull`.
    - Check each wiki page's claims against the current codebase and README — not just this diff.

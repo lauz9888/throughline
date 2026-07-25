@@ -19,6 +19,7 @@ Paths to `requirements.md` and `design.md`.
 4. **Testability** — each requirement's design change is concretely testable at the layer the "Test impact" section assigns it to (unit vs BDD vs e2e), and that assignment is sensible (e.g. pure logic → unit, user-facing behavior/flows → BDD or e2e, not the reverse).
 5. **npm script contract** — the design explicitly accounts for `build`/`typecheck`/`lint`/`dev`/`test:unit`/`test:bdd`/`test:e2e`/`test:coverage:merge` existing or being added; flag it as a gap if silently assumed.
 6. **PWA/deployment correctness** — if the design touches the manifest, service worker, or GitHub Pages base path, sanity-check it won't break the deployed app.
+7. **Accessibility** — for any design touching UI/interactive elements: every accessibility requirement in `requirements.md` maps to a concrete design decision (semantic markup/ARIA, keyboard model, focus management) in the design's "Accessibility" section, not just asserted as "will be accessible"; and the "Test impact" section explicitly assigns a `jest-axe`/`@axe-core/playwright` WCAG scan to at least one layer for each new or changed UI surface. A UI change with no accessibility design decisions or no automated a11y scan assigned is a gap, same as an uncovered functional requirement.
 
 ## Ending your turn
 
