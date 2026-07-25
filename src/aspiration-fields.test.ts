@@ -167,15 +167,20 @@ describe('buildAspirationFields', () => {
     }
   });
 
-  it('handleDocumentClickForTooltip does nothing on a click inside the icon or the tooltip text', () => {
+  // Note: this deliberately does not also assert "a second click on the icon leaves the tooltip
+  // open" — re-clicking `titleIcon` itself hits its own toggle-click listener (a separate code
+  // path from `handleDocumentClickForTooltip`), and toggling the same icon a second time is
+  // legitimately supposed to *close* the tooltip (see the required, must-not-break coverage at
+  // `src/aspiration-modal.test.ts:455-479`, "...toggles on click"). Clicking the tooltip text
+  // itself has no such toggle listener, so it's the case that actually isolates and exercises
+  // `handleDocumentClickForTooltip`'s "click inside the tooltip content" branch.
+  it('handleDocumentClickForTooltip does nothing on a click inside the tooltip text itself', () => {
     const result = buildAspirationFields(document, 'aspiration');
     appendFields(result);
     document.addEventListener('click', result.handleDocumentClickForTooltip);
 
     try {
       result.titleIcon.click();
-
-      result.titleIcon.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(result.isTooltipOpen()).toBe(true);
 
       result.titleTooltip.dispatchEvent(new MouseEvent('click', { bubbles: true }));

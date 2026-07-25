@@ -8,6 +8,6 @@ Feature: Top bar with wordmark
   Scenario: The wordmark is present in the rendered top bar
     Given the app root element is empty
     When the app is rendered
-    Then the app root element contains exactly one top-level child
+    Then the app root element contains exactly two top-level children
     And the rendered content includes the text "throughline"
     And that element's accessible text is "throughline"

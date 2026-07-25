@@ -399,7 +399,89 @@ body {
 .aspiration-modal__link-option input:focus-visible,
 .modal__info:focus-visible,
 .modal__save:focus-visible,
-.modal__actions button:focus-visible {
+.modal__actions button:focus-visible,
+.aspiration-tile:focus-visible,
+.modal__delete:focus-visible {
   outline: 2px solid #1a1a1a;
   outline-offset: 2px;
+}
+
+.aspiration-grid-section {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.aspiration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.aspiration-tile {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: #efe4fb; /* same verified pastel purple as .modal (Requirement 3) */
+  border: 1px solid #8a6d3b;
+  border-radius: 10px; /* Requirement 3 */
+  cursor: pointer;
+}
+
+.aspiration-tile:hover {
+  background: #e4d4f9;
+}
+
+.aspiration-tile__title {
+  color: #1a1a1a; /* Requirement 4 — same verified pair as modal text on #efe4fb */
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  word-break: break-word; /* Requirement 5 — visual-only truncation */
+  text-overflow: ellipsis; /* gives the clamped 4th line a visible truncation cue rather than a
+                              hard, unmarked clip */
+}
+
+.aspiration-grid__empty {
+  color: #1a1a1a;
+  font-size: 1.0625rem;
+}
+
+.modal__delete {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #8a6d3b; /* reuses the already contrast-verified .modal__discard pairing —
+                           deliberately not a new, unverified "danger" color (Requirement 10) */
+  color: #ffffff;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal__delete:hover {
+  background: #6f5730;
+}
+
+/* The delete-confirmation prompt's destructive "Delete" button (Issue #67): kept as its own
+   class, distinct from `.modal__discard` (used by the *unsaved-changes* confirm's "Discard"
+   button), since the two confirms are semantically different actions (discarding an in-progress
+   edit vs. permanently deleting a stored record) even though this design deliberately reuses the
+   exact same contrast-verified color pair for both, rather than introducing a new, unverified
+   "danger" palette entry (Requirement 10). */
+.modal__delete-confirm {
+  border: none;
+  background: #8a6d3b;
+  color: #ffffff;
+}
+.modal__delete-confirm:hover {
+  background: #6f5730;
 }

@@ -513,7 +513,7 @@ describe('initEditAspirationModal', () => {
     seedStorage(aspiration);
 
     const { root, gridContainer } = buildFixture();
-    let originalTile!: HTMLButtonElement;
+    const originalTile = makeTriggerTile(aspiration);
     let newTile!: HTMLButtonElement;
 
     const modal = initEditAspirationModal({
@@ -531,7 +531,6 @@ describe('initEditAspirationModal', () => {
     });
     currentModal = modal;
 
-    originalTile = makeTriggerTile(aspiration);
     gridContainer.append(originalTile);
     modal.open(aspiration, originalTile);
 
