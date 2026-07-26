@@ -73,16 +73,6 @@ function getEditField(world: World, fieldName: string): HTMLInputElement | HTMLT
   return field as HTMLInputElement | HTMLTextAreaElement;
 }
 
-function getEditLinkRadio(world: World, label: string): HTMLInputElement {
-  const id = label === 'Goals' ? 'edit-aspiration-link-goals' : 'edit-aspiration-link-habits';
-  const radio = world.document.getElementById(id);
-  assert.ok(
-    radio,
-    `expected the "${label}" link radio button to exist in the edit aspiration modal`,
-  );
-  return radio as HTMLInputElement;
-}
-
 function getEditCloseButton(world: World): HTMLButtonElement {
   const dialog = getEditDialog(world);
   const button = dialog.querySelector('.modal__close');
@@ -232,16 +222,6 @@ When(
     const field = getEditField(this, fieldName);
     field.value = text;
     field.dispatchEvent(new this.dom.window.Event('input', { bubbles: true }));
-  },
-);
-
-Then(
-  'neither the {string} nor the {string} link radio button is selected in the edit aspiration modal',
-  function (this: World, first: string, second: string) {
-    const firstRadio = getEditLinkRadio(this, first);
-    const secondRadio = getEditLinkRadio(this, second);
-    assert.equal(firstRadio.checked, false, `expected the "${first}" radio to be unselected`);
-    assert.equal(secondRadio.checked, false, `expected the "${second}" radio to be unselected`);
   },
 );
 

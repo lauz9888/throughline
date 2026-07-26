@@ -39,8 +39,7 @@ export function initEditAspirationModal(elements: EditAspirationModalElements): 
     return (
       fields.titleInput.value.trim() !== loadedAspiration.title ||
       fields.descriptionInput.value.trim() !== loadedAspiration.description ||
-      fields.reasonInput.value.trim() !== loadedAspiration.reason ||
-      fields.getSelectedLinkType() !== null
+      fields.reasonInput.value.trim() !== loadedAspiration.reason
     );
   }
 
@@ -215,7 +214,6 @@ export function initEditAspirationModal(elements: EditAspirationModalElements): 
       fields.titleField,
       fields.descriptionField,
       fields.reasonField,
-      fields.linksFieldset,
       saveButton,
       deleteButton,
     );
@@ -224,10 +222,6 @@ export function initEditAspirationModal(elements: EditAspirationModalElements): 
     fields.titleInput.addEventListener('input', updateSaveButtonDisabled);
     fields.descriptionInput.addEventListener('input', updateSaveButtonDisabled);
     fields.reasonInput.addEventListener('input', updateSaveButtonDisabled);
-    [fields.goalsRadio, fields.habitsRadio].forEach((radio) => {
-      radio.addEventListener('click', updateSaveButtonDisabled);
-      radio.addEventListener('change', updateSaveButtonDisabled);
-    });
 
     closeButton.addEventListener('click', requestClose);
     overlay.addEventListener('click', handleOverlayClick);

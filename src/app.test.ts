@@ -64,13 +64,13 @@ describe('renderApp', () => {
     expect((menu as HTMLElement).hidden).toBe(true);
   });
 
-  it('renders exactly 5 menu items with the exact labels and order from ADD_ITEM_TYPES', () => {
+  it('renders exactly 4 menu items with the exact labels and order from ADD_ITEM_TYPES', () => {
     const root = document.createElement('div');
 
     renderApp(root);
 
     const items = Array.from(root.querySelectorAll('[role="menuitem"]'));
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(4);
     expect(items.map((item) => item.textContent)).toEqual([...ADD_ITEM_TYPES]);
   });
 
@@ -389,7 +389,7 @@ describe('renderApp — Aspiration modal wiring', () => {
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   });
 
-  it.each(['Goal', 'Milestone', 'Task', 'Habit'])(
+  it.each(['Goal', 'Task', 'Habit'])(
     'does not open any dialog when "%s" is selected (still unwired)',
     (label) => {
       const root = document.createElement('div');

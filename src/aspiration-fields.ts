@@ -10,8 +10,6 @@ export const DESCRIPTION_TOOLTIP_TEXT =
   'Optional. Add more detail about what this aspiration means to you day to day.';
 export const REASON_TOOLTIP_TEXT =
   'Optional. Explain why this aspiration matters to you — this can help keep you motivated.';
-export const LINKS_TOOLTIP_TEXT =
-  'Optional. Link this aspiration to one of your existing Goals or Habits so they stay connected.';
 
 // A real, focusable, keyboard-operable "info" control shown next to a field's label. It has its
 // own accessible name (e.g. "More information about Title") and reflects its disclosure state
@@ -53,23 +51,15 @@ export interface AspirationFieldsResult {
   titleField: HTMLElement;
   descriptionField: HTMLElement;
   reasonField: HTMLElement;
-  linksFieldset: HTMLFieldSetElement;
   titleInput: HTMLInputElement;
   descriptionInput: HTMLTextAreaElement;
   reasonInput: HTMLTextAreaElement;
-  goalsRadio: HTMLInputElement;
-  habitsRadio: HTMLInputElement;
-  linksEmptyMessage: HTMLElement;
   titleIcon: HTMLButtonElement;
   titleTooltip: HTMLElement;
   descriptionIcon: HTMLButtonElement;
   descriptionTooltip: HTMLElement;
   reasonIcon: HTMLButtonElement;
   reasonTooltip: HTMLElement;
-  linksIcon: HTMLButtonElement;
-  linksTooltip: HTMLElement;
-  getSelectedLinkType: () => 'Goals' | 'Habits' | null;
-  updateLinksState: () => void;
   // Tooltip state (Issue #66): exposed directly rather than behind an opaque `wireTooltips()`
   // wrapper, specifically so each modal file's own `handleDocumentKeydown` can reproduce today's
   // Escape precedence (an open tooltip disclosure closes on the *first* Escape, and only that —
@@ -89,8 +79,6 @@ export function buildAspirationFields(
   idPrefix: string,
   initialValues?: { title?: string; description?: string; reason?: string },
 ): AspirationFieldsResult {
-  let selectedLinkType: 'Goals' | 'Habits' | null = null;
-
   // Tracks whichever single tooltip (info-icon disclosure) is currently toggled open, so that
   // opening a new one closes any previously-open one, and so document-level click/Escape
   // handling knows whether there's anything to close.
@@ -143,35 +131,6 @@ export function buildAspirationFields(
     if (!openTooltip) return false;
     hideTooltip();
     return true;
-  }
-
-  function getSelectedLinkType(): 'Goals' | 'Habits' | null {
-    return selectedLinkType;
-  }
-
-  function updateLinksState(): void {
-    if (selectedLinkType === null) {
-      linksEmptyMessage.hidden = true;
-      linksEmptyMessage.textContent = '';
-    } else {
-      linksEmptyMessage.hidden = false;
-      linksEmptyMessage.textContent = `You don't have any ${selectedLinkType} yet, so there's nothing to link.`;
-    }
-  }
-
-  function handleLinkRadioClick(event: MouseEvent): void {
-    const radio = event.currentTarget as HTMLInputElement;
-    if (selectedLinkType === radio.value) {
-      radio.checked = false;
-      selectedLinkType = null;
-      updateLinksState();
-    }
-  }
-
-  function handleLinkRadioChange(event: Event): void {
-    const radio = event.target as HTMLInputElement;
-    selectedLinkType = radio.checked ? (radio.value as 'Goals' | 'Habits') : null;
-    updateLinksState();
   }
 
   const titleField = doc.createElement('div');
@@ -241,81 +200,23 @@ export function buildAspirationFields(
   );
   reasonField.append(reasonLabelRow, reasonInput, reasonTooltip);
 
-  const linksFieldset = doc.createElement('fieldset');
-  linksFieldset.className = 'aspiration-modal__links';
-  const linksLegend = doc.createElement('legend');
-  const linksInfoWrapper = doc.createElement('span');
-  linksInfoWrapper.className = 'modal__info-wrapper';
-  const linksTooltip = createTooltipText(doc, `${idPrefix}-links-tooltip`, LINKS_TOOLTIP_TEXT);
-  const linksIcon = createInfoIcon(doc, 'Links', `${idPrefix}-links-tooltip`);
-  linksInfoWrapper.append(linksIcon, linksTooltip);
-  linksLegend.append('Links', linksInfoWrapper);
-  linksFieldset.setAttribute('aria-describedby', `${idPrefix}-links-tooltip`);
-
-  const goalsOption = doc.createElement('div');
-  goalsOption.className = 'aspiration-modal__link-option';
-  const goalsRadio = doc.createElement('input');
-  goalsRadio.type = 'radio';
-  goalsRadio.id = `${idPrefix}-link-goals`;
-  goalsRadio.name = `${idPrefix}-link-type`;
-  goalsRadio.value = 'Goals';
-  goalsRadio.setAttribute('aria-describedby', `${idPrefix}-links-tooltip`);
-  const goalsLabel = doc.createElement('label');
-  goalsLabel.setAttribute('for', `${idPrefix}-link-goals`);
-  goalsLabel.textContent = 'Goals';
-  goalsOption.append(goalsRadio, goalsLabel);
-
-  const habitsOption = doc.createElement('div');
-  habitsOption.className = 'aspiration-modal__link-option';
-  const habitsRadio = doc.createElement('input');
-  habitsRadio.type = 'radio';
-  habitsRadio.id = `${idPrefix}-link-habits`;
-  habitsRadio.name = `${idPrefix}-link-type`;
-  habitsRadio.value = 'Habits';
-  habitsRadio.setAttribute('aria-describedby', `${idPrefix}-links-tooltip`);
-  const habitsLabel = doc.createElement('label');
-  habitsLabel.setAttribute('for', `${idPrefix}-link-habits`);
-  habitsLabel.textContent = 'Habits';
-  habitsOption.append(habitsRadio, habitsLabel);
-
-  const linksEmptyMessage = doc.createElement('p');
-  linksEmptyMessage.className = 'aspiration-modal__links-empty';
-  linksEmptyMessage.setAttribute('aria-live', 'polite');
-  linksEmptyMessage.hidden = true;
-
-  linksFieldset.append(linksLegend, goalsOption, habitsOption, linksEmptyMessage);
-
-  [goalsRadio, habitsRadio].forEach((radio) => {
-    radio.addEventListener('click', handleLinkRadioClick);
-    radio.addEventListener('change', handleLinkRadioChange);
-  });
-
   wireTooltipIcon(titleIcon, titleTooltip);
   wireTooltipIcon(descriptionIcon, descriptionTooltip);
   wireTooltipIcon(reasonIcon, reasonTooltip);
-  wireTooltipIcon(linksIcon, linksTooltip);
 
   return {
     titleField,
     descriptionField,
     reasonField,
-    linksFieldset,
     titleInput,
     descriptionInput,
     reasonInput,
-    goalsRadio,
-    habitsRadio,
-    linksEmptyMessage,
     titleIcon,
     titleTooltip,
     descriptionIcon,
     descriptionTooltip,
     reasonIcon,
     reasonTooltip,
-    linksIcon,
-    linksTooltip,
-    getSelectedLinkType,
-    updateLinksState,
     isTooltipOpen,
     hideOpenTooltip,
     handleDocumentClickForTooltip,

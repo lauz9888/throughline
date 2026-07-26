@@ -46,7 +46,6 @@ Feature: Aspiration tile grid and Edit Aspiration modal
     And the edit aspiration modal's "Title" field contains "My aspiration"
     And the edit aspiration modal's "Description" field contains "A description"
     And the edit aspiration modal's "Reason" field contains "A good reason"
-    And neither the "Goals" nor the "Habits" link radio button is selected in the edit aspiration modal
 
   Scenario: Edit's Save button starts disabled, enables once a field is changed, and disables again once reverted
     Given the following aspirations are stored:

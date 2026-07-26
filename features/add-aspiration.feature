@@ -2,10 +2,9 @@ Feature: Create Aspiration modal
 
   Selecting "Aspiration" from the add-item menu opens a modal for creating an
   aspiration: a long-term, potentially lifelong life direction. The modal
-  collects a mandatory Title plus optional Description/Reason, offers a
-  Goals/Habits "Links" toggle (scoped to the toggle and an unconditional
-  empty-state message this run), warns before discarding unsaved changes, and
-  persists a saved aspiration to local storage.
+  collects a mandatory Title plus optional Description/Reason, warns before
+  discarding unsaved changes, and persists a saved aspiration to local
+  storage.
 
   Background:
     Given the app root element is empty
@@ -32,20 +31,6 @@ Feature: Create Aspiration modal
     Then the aspiration modal's Save button is disabled
     When "   " is entered into the aspiration modal's "Title" field
     Then the aspiration modal's Save button is disabled
-
-  Scenario: The Links section starts with neither radio selected, toggles the empty-state message, and supports re-click deselection
-    Then neither the "Goals" nor the "Habits" link radio button is selected
-    And the links empty-state message is hidden
-    When the "Goals" link radio button is clicked
-    Then the "Goals" link radio button is selected
-    And the links empty-state message is visible with text "You don't have any Goals yet, so there's nothing to link."
-    When the "Habits" link radio button is clicked
-    Then the "Habits" link radio button is selected
-    And the "Goals" link radio button is not selected
-    And the links empty-state message is visible with text "You don't have any Habits yet, so there's nothing to link."
-    When the "Habits" link radio button is clicked
-    Then neither the "Goals" nor the "Habits" link radio button is selected
-    And the links empty-state message is hidden
 
   Scenario: Closing via the close button with nothing entered closes the modal immediately
     When the aspiration modal's close button is clicked

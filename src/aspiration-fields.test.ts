@@ -2,12 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { buildAspirationFields, type AspirationFieldsResult } from './aspiration-fields';
 
 function appendFields(result: AspirationFieldsResult): void {
-  document.body.append(
-    result.titleField,
-    result.descriptionField,
-    result.reasonField,
-    result.linksFieldset,
-  );
+  document.body.append(result.titleField, result.descriptionField, result.reasonField);
 }
 
 describe('buildAspirationFields', () => {
@@ -44,60 +39,20 @@ describe('buildAspirationFields', () => {
     expect(result.reasonInput.value).toBe('');
   });
 
-  it('clicking a link radio selects it and reveals the matching empty-state message', () => {
-    const result = buildAspirationFields(document, 'aspiration');
-    appendFields(result);
+  it('does not build or return any Links-related fields (Requirement 6)', () => {
+    const result = buildAspirationFields(document, 'aspiration') as unknown as Record<
+      string,
+      unknown
+    >;
 
-    expect(result.goalsRadio.checked).toBe(false);
-    expect(result.linksEmptyMessage.hidden).toBe(true);
-
-    result.goalsRadio.click();
-
-    expect(result.goalsRadio.checked).toBe(true);
-    expect(result.linksEmptyMessage.hidden).toBe(false);
-    expect(result.linksEmptyMessage.textContent).toContain('Goals');
-  });
-
-  it('re-clicking the already-checked radio deselects it and hides the message', () => {
-    const result = buildAspirationFields(document, 'aspiration');
-    appendFields(result);
-
-    result.goalsRadio.click();
-    expect(result.goalsRadio.checked).toBe(true);
-
-    result.goalsRadio.click();
-
-    expect(result.goalsRadio.checked).toBe(false);
-    expect(result.linksEmptyMessage.hidden).toBe(true);
-    expect(result.linksEmptyMessage.textContent).toBe('');
-  });
-
-  it('selecting the other radio swaps the selection and message text', () => {
-    const result = buildAspirationFields(document, 'aspiration');
-    appendFields(result);
-
-    result.goalsRadio.click();
-    result.habitsRadio.click();
-
-    expect(result.goalsRadio.checked).toBe(false);
-    expect(result.habitsRadio.checked).toBe(true);
-    expect(result.linksEmptyMessage.textContent).toContain('Habits');
-  });
-
-  it('getSelectedLinkType() reflects the current selection, starting at null', () => {
-    const result = buildAspirationFields(document, 'aspiration');
-    appendFields(result);
-
-    expect(result.getSelectedLinkType()).toBeNull();
-
-    result.goalsRadio.click();
-    expect(result.getSelectedLinkType()).toBe('Goals');
-
-    result.habitsRadio.click();
-    expect(result.getSelectedLinkType()).toBe('Habits');
-
-    result.habitsRadio.click();
-    expect(result.getSelectedLinkType()).toBeNull();
+    expect(result.linksFieldset).toBeUndefined();
+    expect(result.goalsRadio).toBeUndefined();
+    expect(result.habitsRadio).toBeUndefined();
+    expect(result.linksEmptyMessage).toBeUndefined();
+    expect(result.linksIcon).toBeUndefined();
+    expect(result.linksTooltip).toBeUndefined();
+    expect(result.getSelectedLinkType).toBeUndefined();
+    expect(result.updateLinksState).toBeUndefined();
   });
 
   it('isTooltipOpen() starts false, and toggling an icon opens its tooltip', () => {
