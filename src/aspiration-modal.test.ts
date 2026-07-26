@@ -90,7 +90,7 @@ describe('initAspirationModal', () => {
     expect(blurb?.textContent).toBe(BLURB_TEXT);
   });
 
-  it('orders content as blurb, Title, Description, Reason, Links, Save regardless of close-button position (Requirement 4)', () => {
+  it('orders content as blurb, Title, Description, Reason, Save regardless of close-button position (Requirement 4)', () => {
     const { modal } = setup();
 
     modal.open();
@@ -103,15 +103,14 @@ describe('initAspirationModal', () => {
     const titleInput = dialog.querySelector('#aspiration-field-title');
     const descriptionInput = dialog.querySelector('#aspiration-field-description');
     const reasonInput = dialog.querySelector('#aspiration-field-reason');
-    const linksFieldset = dialog.querySelector('.aspiration-modal__links');
     const saveButton = dialog.querySelector('.modal__save');
 
     expect(indexOf(blurb)).toBeGreaterThanOrEqual(0);
     expect(indexOf(blurb)).toBeLessThan(indexOf(titleInput));
     expect(indexOf(titleInput)).toBeLessThan(indexOf(descriptionInput));
     expect(indexOf(descriptionInput)).toBeLessThan(indexOf(reasonInput));
-    expect(indexOf(reasonInput)).toBeLessThan(indexOf(linksFieldset));
-    expect(indexOf(linksFieldset)).toBeLessThan(indexOf(saveButton));
+    expect(indexOf(reasonInput)).toBeLessThan(indexOf(saveButton));
+    expect(dialog.querySelector('.aspiration-modal__links')).toBeNull();
   });
 
   it('does not add a second dialog when open() is called a second time while already open (Requirement 5)', () => {
@@ -195,66 +194,6 @@ describe('initAspirationModal', () => {
     expect(stored[0]!.title).toBe('Live a healthy life');
     expect(stored[0]!.description).toBe('Some description');
     expect(stored[0]!.reason).toBe('Some reason');
-  });
-
-  it('starts with neither Links radio selected, and selecting Goals shows the empty-state message mentioning Goals (Requirements 9, 10, 12, 34, 35)', () => {
-    const { modal } = setup();
-
-    modal.open();
-
-    const dialog = getDialog();
-    const goalsRadio = dialog.querySelector<HTMLInputElement>('#aspiration-link-goals')!;
-    const habitsRadio = dialog.querySelector<HTMLInputElement>('#aspiration-link-habits')!;
-    const emptyMessage = dialog.querySelector<HTMLElement>('.aspiration-modal__links-empty')!;
-
-    expect(goalsRadio.checked).toBe(false);
-    expect(habitsRadio.checked).toBe(false);
-    expect(emptyMessage.hidden).toBe(true);
-
-    goalsRadio.click();
-
-    expect(goalsRadio.checked).toBe(true);
-    expect(emptyMessage.hidden).toBe(false);
-    expect(emptyMessage.textContent).toContain('Goals');
-    expect(emptyMessage.getAttribute('aria-live')).toBe('polite');
-  });
-
-  it('selecting Habits instead of Goals swaps the message and deselects Goals (Requirement 9)', () => {
-    const { modal } = setup();
-
-    modal.open();
-
-    const dialog = getDialog();
-    const goalsRadio = dialog.querySelector<HTMLInputElement>('#aspiration-link-goals')!;
-    const habitsRadio = dialog.querySelector<HTMLInputElement>('#aspiration-link-habits')!;
-    const emptyMessage = dialog.querySelector<HTMLElement>('.aspiration-modal__links-empty')!;
-
-    goalsRadio.click();
-    habitsRadio.click();
-
-    expect(goalsRadio.checked).toBe(false);
-    expect(habitsRadio.checked).toBe(true);
-    expect(emptyMessage.hidden).toBe(false);
-    expect(emptyMessage.textContent).toContain('Habits');
-  });
-
-  it('re-clicking the currently-selected radio deselects it and hides the message (Requirement 11)', () => {
-    const { modal } = setup();
-
-    modal.open();
-
-    const dialog = getDialog();
-    const goalsRadio = dialog.querySelector<HTMLInputElement>('#aspiration-link-goals')!;
-    const emptyMessage = dialog.querySelector<HTMLElement>('.aspiration-modal__links-empty')!;
-
-    goalsRadio.click();
-    expect(goalsRadio.checked).toBe(true);
-
-    goalsRadio.click();
-
-    expect(goalsRadio.checked).toBe(false);
-    expect(emptyMessage.hidden).toBe(true);
-    expect(emptyMessage.textContent).toBe('');
   });
 
   it('closes immediately with no confirmation when the close (X) button is activated with all fields empty (Requirement 16)', () => {
@@ -541,20 +480,6 @@ describe('initAspirationModal', () => {
     const { modal } = setup();
 
     modal.open();
-
-    const results = await axe(document.body, {
-      runOnly: { type: 'tag', values: WCAG_TAGS },
-      rules: { 'color-contrast': { enabled: false } },
-    });
-    expect(results).toHaveNoViolations();
-  });
-
-  it('has no automatically detectable WCAG violations with the Goals radio selected (empty-state message visible)', async () => {
-    const { modal } = setup();
-
-    modal.open();
-    const dialog = getDialog();
-    dialog.querySelector<HTMLInputElement>('#aspiration-link-goals')!.click();
 
     const results = await axe(document.body, {
       runOnly: { type: 'tag', values: WCAG_TAGS },

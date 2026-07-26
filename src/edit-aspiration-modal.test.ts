@@ -118,7 +118,7 @@ describe('initEditAspirationModal', () => {
     expect(document.getElementById(labelledBy!)?.textContent).toBe('Edit Aspiration');
   });
 
-  it('pre-fills Title/Description/Reason from the passed aspiration; Links radios start unchecked (Requirement 10)', () => {
+  it('pre-fills Title/Description/Reason from the passed aspiration (Requirement 10)', () => {
     const aspiration = makeAspiration();
     seedStorage(aspiration);
     const { gridContainer, modal } = setup();
@@ -131,14 +131,21 @@ describe('initEditAspirationModal', () => {
       'textarea[id$="field-description"]',
     )!;
     const reasonInput = dialog.querySelector<HTMLTextAreaElement>('textarea[id$="field-reason"]')!;
-    const goalsRadio = dialog.querySelector<HTMLInputElement>('input[id$="link-goals"]')!;
-    const habitsRadio = dialog.querySelector<HTMLInputElement>('input[id$="link-habits"]')!;
 
     expect(titleInput.value).toBe(aspiration.title);
     expect(descriptionInput.value).toBe(aspiration.description);
     expect(reasonInput.value).toBe(aspiration.reason);
-    expect(goalsRadio.checked).toBe(false);
-    expect(habitsRadio.checked).toBe(false);
+  });
+
+  it('renders no Links markup in the DOM (Requirements 6, 7)', () => {
+    const aspiration = makeAspiration();
+    seedStorage(aspiration);
+    const { gridContainer, modal } = setup();
+
+    openWithTile(modal, gridContainer, aspiration);
+
+    const dialog = getDialog();
+    expect(dialog.querySelector('.aspiration-modal__links')).toBeNull();
   });
 
   it('Save starts disabled (Requirement 13)', () => {
@@ -203,23 +210,6 @@ describe('initEditAspirationModal', () => {
     expect(saveButton.disabled).toBe(false);
 
     setValue(reasonInput, aspiration.reason);
-    expect(saveButton.disabled).toBe(true);
-  });
-
-  it('Save enables when a Links radio is selected, and disables again when deselected (Requirement 14)', () => {
-    const aspiration = makeAspiration();
-    seedStorage(aspiration);
-    const { gridContainer, modal } = setup();
-    openWithTile(modal, gridContainer, aspiration);
-
-    const dialog = getDialog();
-    const goalsRadio = dialog.querySelector<HTMLInputElement>('input[id$="link-goals"]')!;
-    const saveButton = dialog.querySelector<HTMLButtonElement>('.modal__save')!;
-
-    goalsRadio.click();
-    expect(saveButton.disabled).toBe(false);
-
-    goalsRadio.click(); // re-click deselects
     expect(saveButton.disabled).toBe(true);
   });
 

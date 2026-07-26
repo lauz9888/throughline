@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { initAddItemMenu } from './add-item-menu';
 
-const ITEM_LABELS = ['Aspiration', 'Goal', 'Milestone', 'Task', 'Habit'];
+const ITEM_LABELS = ['Aspiration', 'Goal', 'Task', 'Habit'];
 
 function buildFixture() {
   const button = document.createElement('button');
@@ -125,8 +125,8 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[4]!.focus();
-    fixture.items[4]!.dispatchEvent(
+    fixture.items[3]!.focus();
+    fixture.items[3]!.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
     );
 
@@ -142,7 +142,7 @@ describe('initAddItemMenu', () => {
       new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }),
     );
 
-    expect(document.activeElement).toBe(fixture.items[4]!);
+    expect(document.activeElement).toBe(fixture.items[3]!);
   });
 
   it('opens the closed menu and focuses "Aspiration" on Enter from the trigger', () => {
@@ -211,7 +211,7 @@ describe('initAddItemMenu', () => {
     expect(document.activeElement!.textContent).not.toBe('Task');
   });
 
-  it('moves focus from "Goal" to "Milestone" on ArrowDown between two middle items', () => {
+  it('moves focus from "Goal" to "Task" on ArrowDown between two middle items', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
@@ -220,14 +220,14 @@ describe('initAddItemMenu', () => {
       new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
     );
 
-    expect(document.activeElement).toBe(fixture.items[2]!); // "Milestone"
+    expect(document.activeElement).toBe(fixture.items[2]!); // "Task"
   });
 
-  it('moves focus from "Milestone" to "Goal" on ArrowUp between two middle items', () => {
+  it('moves focus from "Task" to "Goal" on ArrowUp between two middle items', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[2]!.focus(); // "Milestone"
+    fixture.items[2]!.focus(); // "Task"
     fixture.items[2]!.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }),
     );
@@ -239,8 +239,8 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[3]!.focus(); // "Task"
-    fixture.items[3]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    fixture.items[2]!.focus(); // "Task"
+    fixture.items[2]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
 
     expect(document.activeElement).toBe(fixture.items[0]!);
   });
@@ -252,7 +252,7 @@ describe('initAddItemMenu', () => {
     fixture.items[1]!.focus(); // "Goal"
     fixture.items[1]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
 
-    expect(document.activeElement).toBe(fixture.items[4]!);
+    expect(document.activeElement).toBe(fixture.items[3]!);
   });
 
   it('maintains a roving tabindex that tracks the focused item and resets to the first item on every closed→open transition', () => {
@@ -264,7 +264,6 @@ describe('initAddItemMenu', () => {
     expect(fixture.items[1]!.tabIndex).toBe(-1);
     expect(fixture.items[2]!.tabIndex).toBe(-1);
     expect(fixture.items[3]!.tabIndex).toBe(-1);
-    expect(fixture.items[4]!.tabIndex).toBe(-1);
 
     fixture.items[0]!.focus();
     fixture.items[0]!.dispatchEvent(
@@ -275,7 +274,6 @@ describe('initAddItemMenu', () => {
     expect(fixture.items[1]!.tabIndex).toBe(0);
     expect(fixture.items[2]!.tabIndex).toBe(-1);
     expect(fixture.items[3]!.tabIndex).toBe(-1);
-    expect(fixture.items[4]!.tabIndex).toBe(-1);
 
     // Close and reopen: the roving position must reset to the first item, not remain on
     // whichever item held it before the close.
@@ -290,7 +288,7 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[2]!.focus(); // "Milestone"
+    fixture.items[2]!.focus(); // "Task"
     const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
     fixture.items[2]!.dispatchEvent(event);
 
@@ -303,7 +301,7 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[2]!.focus(); // "Milestone"
+    fixture.items[2]!.focus(); // "Task"
     fixture.items[2]!.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
     );
@@ -320,7 +318,7 @@ describe('initAddItemMenu', () => {
     initAddItemMenu({ button: fixture.button, menu: fixture.menu });
 
     fixture.button.click();
-    fixture.items[2]!.focus(); // "Milestone"
+    fixture.items[2]!.focus(); // "Task"
     const event = new KeyboardEvent('keydown', {
       key: 'Tab',
       shiftKey: true,
@@ -350,7 +348,7 @@ describe('initAddItemMenu', () => {
       new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
     );
 
-    expect(document.activeElement).toBe(fixture.items[2]!); // "Milestone"
+    expect(document.activeElement).toBe(fixture.items[2]!); // "Task"
     expect(fixture.menu.hidden).toBe(false);
     expect(fixture.button.getAttribute('aria-expanded')).toBe('true');
   });

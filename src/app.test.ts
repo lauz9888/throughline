@@ -389,7 +389,7 @@ describe('renderApp — Aspiration modal wiring', () => {
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   });
 
-  it.each(['Goal', 'Milestone', 'Task', 'Habit'])(
+  it.each(['Goal', 'Task', 'Habit'])(
     'does not open any dialog when "%s" is selected (still unwired)',
     (label) => {
       const root = document.createElement('div');
