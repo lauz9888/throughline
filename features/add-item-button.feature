@@ -25,7 +25,6 @@ Feature: Add-item button and dropdown
     And the add-item menu contains the following menu items in order:
       | Aspiration |
       | Goal       |
-      | Milestone  |
       | Task       |
       | Habit      |
 

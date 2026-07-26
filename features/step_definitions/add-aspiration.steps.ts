@@ -51,20 +51,6 @@ function getField(world: World, fieldName: string): HTMLInputElement | HTMLTextA
   return field as HTMLInputElement | HTMLTextAreaElement;
 }
 
-function getLinkRadio(world: World, label: string): HTMLInputElement {
-  const id = label === 'Goals' ? 'aspiration-link-goals' : 'aspiration-link-habits';
-  const radio = world.document.getElementById(id);
-  assert.ok(radio, `expected the "${label}" link radio button to exist`);
-  return radio as HTMLInputElement;
-}
-
-function getLinksEmptyMessage(world: World): HTMLElement {
-  const dialog = getMainDialog(world);
-  const message = dialog.querySelector('.aspiration-modal__links-empty');
-  assert.ok(message, 'expected the links empty-state message element to exist');
-  return message as HTMLElement;
-}
-
 function getCloseButton(world: World): HTMLButtonElement {
   const dialog = getMainDialog(world);
   const button = dialog.querySelector('.modal__close');
@@ -230,47 +216,6 @@ Then("the aspiration modal's Save button is enabled", function (this: World) {
 When("the aspiration modal's Save button is clicked", function (this: World) {
   dispatchClick(this, getSaveButton(this));
 });
-
-// --- Links section ---
-
-Then(
-  'neither the {string} nor the {string} link radio button is selected',
-  function (this: World, first: string, second: string) {
-    const firstRadio = getLinkRadio(this, first);
-    const secondRadio = getLinkRadio(this, second);
-    assert.equal(firstRadio.checked, false, `expected the "${first}" radio to be unselected`);
-    assert.equal(secondRadio.checked, false, `expected the "${second}" radio to be unselected`);
-  },
-);
-
-When('the {string} link radio button is clicked', function (this: World, label: string) {
-  const radio = getLinkRadio(this, label);
-  dispatchClick(this, radio);
-});
-
-Then('the {string} link radio button is selected', function (this: World, label: string) {
-  const radio = getLinkRadio(this, label);
-  assert.equal(radio.checked, true);
-});
-
-Then('the {string} link radio button is not selected', function (this: World, label: string) {
-  const radio = getLinkRadio(this, label);
-  assert.equal(radio.checked, false);
-});
-
-Then('the links empty-state message is hidden', function (this: World) {
-  const message = getLinksEmptyMessage(this);
-  assert.equal(message.hidden, true);
-});
-
-Then(
-  'the links empty-state message is visible with text {string}',
-  function (this: World, expected: string) {
-    const message = getLinksEmptyMessage(this);
-    assert.equal(message.hidden, false);
-    assert.equal(message.textContent, expected);
-  },
-);
 
 // --- Close / Escape / backdrop / confirmation prompt ---
 
