@@ -4,7 +4,7 @@ import { initAspirationGrid } from './aspiration-grid';
 import { initEditAspirationModal } from './edit-aspiration-modal';
 import type { Aspiration } from './aspiration-storage';
 
-export const ADD_ITEM_TYPES = ['Aspiration', 'Goal', 'Milestone', 'Task', 'Habit'] as const;
+export const ADD_ITEM_TYPES = ['Aspiration', 'Goal', 'Task', 'Habit'] as const;
 
 let cleanupAddItemMenu: (() => void) | undefined;
 let cleanupAspirationModal: (() => void) | undefined;

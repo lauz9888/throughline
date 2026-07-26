@@ -37,8 +37,7 @@ export function initAspirationModal(elements: AspirationModalElements): {
     return (
       fields.titleInput.value.trim() !== '' ||
       fields.descriptionInput.value.trim() !== '' ||
-      fields.reasonInput.value.trim() !== '' ||
-      fields.getSelectedLinkType() !== null
+      fields.reasonInput.value.trim() !== ''
     );
   }
 
@@ -170,7 +169,6 @@ export function initAspirationModal(elements: AspirationModalElements): {
       fields.titleField,
       fields.descriptionField,
       fields.reasonField,
-      fields.linksFieldset,
       saveButton,
     );
     overlay.append(dialog);
