@@ -133,8 +133,6 @@ test.describe('aspiration tile grid', () => {
       'Weekly practice sessions',
     );
     await expect(dialog.getByLabel('Reason', { exact: true })).toHaveValue('Creative outlet');
-    await expect(dialog.getByRole('radio', { name: 'Goals' })).not.toBeChecked();
-    await expect(dialog.getByRole('radio', { name: 'Habits' })).not.toBeChecked();
   });
 
   test('Save starts disabled, enables once Title is edited, and disables again once reverted to the loaded value', async ({

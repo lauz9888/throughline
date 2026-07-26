@@ -88,7 +88,7 @@ test.describe('add item button', () => {
     expect(outline.outlineColor).toBe('rgb(26, 26, 26)');
   });
 
-  test('clicking opens a dropdown with the five item types in order', async ({ page }) => {
+  test('clicking opens a dropdown with the four item types in order', async ({ page }) => {
     await page.goto('./');
 
     const button = page.getByRole('button', { name: 'Add item' });
@@ -98,14 +98,8 @@ test.describe('add item button', () => {
     await expect(menu).toBeVisible();
 
     const items = menu.getByRole('menuitem');
-    await expect(items).toHaveCount(5);
-    expect(await items.allTextContents()).toEqual([
-      'Aspiration',
-      'Goal',
-      'Milestone',
-      'Task',
-      'Habit',
-    ]);
+    await expect(items).toHaveCount(4);
+    expect(await items.allTextContents()).toEqual(['Aspiration', 'Goal', 'Task', 'Habit']);
   });
 
   test('clicking again closes the dropdown (toggle)', async ({ page }) => {
@@ -250,7 +244,7 @@ test.describe('add item button', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     let focusedName = await page.evaluate(() => document.activeElement?.textContent);
-    expect(focusedName).toBe('Milestone');
+    expect(focusedName).toBe('Task');
 
     await page.keyboard.press('ArrowUp');
     focusedName = await page.evaluate(() => document.activeElement?.textContent);
@@ -267,7 +261,7 @@ test.describe('add item button', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     let focusedName = await page.evaluate(() => document.activeElement?.textContent);
-    expect(focusedName).toBe('Milestone');
+    expect(focusedName).toBe('Task');
 
     await page.keyboard.press('End');
     focusedName = await page.evaluate(() => document.activeElement?.textContent);

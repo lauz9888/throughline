@@ -39,9 +39,6 @@ test.describe('create aspiration modal', () => {
     await expect(dialog.getByLabel('Title', { exact: true })).toBeVisible();
     await expect(dialog.getByLabel('Description', { exact: true })).toBeVisible();
     await expect(dialog.getByLabel('Reason', { exact: true })).toBeVisible();
-    await expect(dialog.getByRole('group', { name: 'Links' })).toBeVisible();
-    await expect(dialog.getByRole('radio', { name: 'Goals' })).toBeVisible();
-    await expect(dialog.getByRole('radio', { name: 'Habits' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Save' })).toBeVisible();
 
     const order = await dialog.evaluate((el) => {
@@ -50,16 +47,12 @@ test.describe('create aspiration modal', () => {
         blurbBeforeTitle: text.indexOf('An aspiration is') < text.indexOf('Title'),
         titleBeforeDescription: text.indexOf('Title') < text.indexOf('Description'),
         descriptionBeforeReason: text.indexOf('Description') < text.indexOf('Reason'),
-        reasonBeforeLinks: text.indexOf('Reason') < text.indexOf('Links'),
-        linksBeforeSave: text.indexOf('Links') < text.indexOf('Save'),
       };
     });
     expect(order).toEqual({
       blurbBeforeTitle: true,
       titleBeforeDescription: true,
       descriptionBeforeReason: true,
-      reasonBeforeLinks: true,
-      linksBeforeSave: true,
     });
   });
 
@@ -122,15 +115,11 @@ test.describe('create aspiration modal', () => {
 
     // Focus starts on Title. Tab forward through each field's info-icon disclosure
     // button (now a real, focusable tab stop of its own — see Requirement 2's
-    // click-to-toggle tooltip behavior) followed by its field, then the Goals radio
-    // (the only tab stop in the Goals/Habits group while neither is checked yet),
-    // landing on Save.
+    // click-to-toggle tooltip behavior) followed by its field, landing on Save.
     await page.keyboard.press('Tab'); // Description info icon
     await page.keyboard.press('Tab'); // Description
     await page.keyboard.press('Tab'); // Reason info icon
     await page.keyboard.press('Tab'); // Reason
-    await page.keyboard.press('Tab'); // Links info icon
-    await page.keyboard.press('Tab'); // Goals radio
     await page.keyboard.press('Tab'); // Save
     await expect(page.getByRole('button', { name: 'Save' })).toBeFocused();
 
@@ -265,84 +254,6 @@ test.describe('create aspiration modal', () => {
     await expect(page.locator(`#${describedById}`)).toHaveText(
       /A short, memorable name for this aspiration/,
     );
-  });
-
-  test('selecting Goals shows the empty-state message; selecting Habits swaps it and deselects Goals; re-selecting the checked radio deselects it', async ({
-    page,
-  }) => {
-    await page.goto('./');
-    await openAspirationModal(page);
-
-    const goalsRadio = page.getByRole('radio', { name: 'Goals' });
-    const habitsRadio = page.getByRole('radio', { name: 'Habits' });
-    const emptyMessage = page.locator('.aspiration-modal__links-empty');
-
-    await expect(goalsRadio).not.toBeChecked();
-    await expect(habitsRadio).not.toBeChecked();
-    await expect(emptyMessage).toBeHidden();
-
-    await goalsRadio.click();
-    await expect(goalsRadio).toBeChecked();
-    await expect(emptyMessage).toBeVisible();
-    await expect(emptyMessage).toContainText('Goals');
-
-    await habitsRadio.click();
-    await expect(habitsRadio).toBeChecked();
-    await expect(goalsRadio).not.toBeChecked();
-    await expect(emptyMessage).toContainText('Habits');
-
-    await habitsRadio.click(); // re-click the already-selected radio
-    await expect(habitsRadio).not.toBeChecked();
-    await expect(emptyMessage).toBeHidden();
-  });
-
-  test('ArrowDown moves the Links radio-group selection from Goals to Habits, and ArrowUp moves it back (Requirement 34)', async ({
-    page,
-  }) => {
-    await page.goto('./');
-    await openAspirationModal(page);
-
-    const goalsRadio = page.getByRole('radio', { name: 'Goals' });
-    const habitsRadio = page.getByRole('radio', { name: 'Habits' });
-    const emptyMessage = page.locator('.aspiration-modal__links-empty');
-
-    await goalsRadio.focus();
-    await expect(goalsRadio).not.toBeChecked();
-
-    await page.keyboard.press('ArrowDown');
-    await expect(habitsRadio).toBeChecked();
-    await expect(goalsRadio).not.toBeChecked();
-    await expect(habitsRadio).toBeFocused();
-    await expect(emptyMessage).toContainText('Habits');
-
-    await page.keyboard.press('ArrowUp');
-    await expect(goalsRadio).toBeChecked();
-    await expect(habitsRadio).not.toBeChecked();
-    await expect(goalsRadio).toBeFocused();
-    await expect(emptyMessage).toContainText('Goals');
-  });
-
-  test('ArrowRight moves the Links radio-group selection from Goals to Habits, and ArrowLeft moves it back (Requirement 34)', async ({
-    page,
-  }) => {
-    await page.goto('./');
-    await openAspirationModal(page);
-
-    const goalsRadio = page.getByRole('radio', { name: 'Goals' });
-    const habitsRadio = page.getByRole('radio', { name: 'Habits' });
-    const emptyMessage = page.locator('.aspiration-modal__links-empty');
-
-    await goalsRadio.focus();
-
-    await page.keyboard.press('ArrowRight');
-    await expect(habitsRadio).toBeChecked();
-    await expect(goalsRadio).not.toBeChecked();
-    await expect(emptyMessage).toContainText('Habits');
-
-    await page.keyboard.press('ArrowLeft');
-    await expect(goalsRadio).toBeChecked();
-    await expect(habitsRadio).not.toBeChecked();
-    await expect(emptyMessage).toContainText('Goals');
   });
 
   test('closing via the X control with all fields empty closes the modal immediately with no confirmation prompt', async ({
@@ -544,19 +455,6 @@ test.describe('create aspiration modal', () => {
     await expect(page.locator('#aspiration-field-title-tooltip')).toHaveClass(
       /modal__tooltip-text--visible/,
     );
-
-    const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
-    expect(results.violations).toEqual([]);
-  });
-
-  test('the open modal with the Goals radio selected (empty-state message visible) has no automatically detectable WCAG violations', async ({
-    page,
-  }) => {
-    await page.goto('./');
-    await openAspirationModal(page);
-
-    await page.getByRole('radio', { name: 'Goals' }).click();
-    await expect(page.locator('.aspiration-modal__links-empty')).toBeVisible();
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     expect(results.violations).toEqual([]);
