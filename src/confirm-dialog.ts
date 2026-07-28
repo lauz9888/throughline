@@ -9,6 +9,9 @@ export interface ConfirmDialogOptions {
   cancelClassName: string; // default-focused, non-destructive
   confirmText: string;
   confirmClassName: string; // destructive/continue action
+  dialogClassName?: string; // NEW — appended to the dialog's default 'modal modal--confirm'
+  // classes when supplied, so a caller's own color-scheme modifier (e.g. 'modal--goal') carries
+  // over to this nested confirm dialog.
 }
 
 export interface ConfirmDialogCallbacks {
@@ -26,7 +29,7 @@ export function openConfirmDialog(
   overlay.className = 'modal-overlay';
 
   const dialog = doc.createElement('div');
-  dialog.className = 'modal modal--confirm';
+  dialog.className = ['modal', 'modal--confirm', options.dialogClassName].filter(Boolean).join(' ');
   dialog.setAttribute('role', 'alertdialog');
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-labelledby', options.headingId);

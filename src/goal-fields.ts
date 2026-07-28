@@ -1,21 +1,18 @@
 import { buildTextField, createTooltipController } from './field-kit';
 
-export { createInfoIcon, createTooltipText } from './field-kit';
-
 export const BLURB_TEXT =
-  'An aspiration is a long-term, potentially lifelong life direction — not necessarily a ' +
-  "measurable, checkable goal. It's a guiding principle that shapes and motivates your more " +
-  "concrete goals, for example 'live a healthy life', 'have a successful and fulfilling " +
-  "career', or 'maintain healthy and loving relationships'.";
+  'A goal is a specific, measurable, significant achievement with a clear and distinct ' +
+  "completion point — for example 'get promoted to manager', 'run a marathon', or 'be " +
+  "awarded a degree'.";
 
 export const TITLE_TOOLTIP_TEXT =
-  "A short, memorable name for this aspiration — for example 'Live a healthy life'.";
+  "A short, memorable name for this goal — for example 'Get promoted to manager'.";
 export const DESCRIPTION_TOOLTIP_TEXT =
-  'Optional. Add more detail about what this aspiration means to you day to day.';
+  'Optional. Add more detail about what achieving this goal looks like.';
 export const REASON_TOOLTIP_TEXT =
-  'Optional. Explain why this aspiration matters to you — this can help keep you motivated.';
+  'Optional. Explain why this goal matters to you — this can help keep you motivated.';
 
-export interface AspirationFieldsResult {
+export interface GoalFieldsResult {
   titleField: HTMLElement;
   descriptionField: HTMLElement;
   reasonField: HTMLElement;
@@ -28,25 +25,15 @@ export interface AspirationFieldsResult {
   descriptionTooltip: HTMLElement;
   reasonIcon: HTMLButtonElement;
   reasonTooltip: HTMLElement;
-  // Tooltip state (Issue #66): exposed directly rather than behind an opaque `wireTooltips()`
-  // wrapper, specifically so each modal file's own `handleDocumentKeydown` can reproduce today's
-  // Escape precedence (an open tooltip disclosure closes on the *first* Escape, and only that —
-  // the modal/confirm itself must NOT also close on the same keypress; a *second* Escape, with
-  // nothing open, closes with no confirmation).
   isTooltipOpen: () => boolean;
-  // Idempotent: a no-op returning `false` if nothing was open. Closes whichever tooltip is
-  // currently open (if any) and returns `true` if it actually closed one, `false` otherwise.
   hideOpenTooltip: () => boolean;
-  // Wired/unwired by the caller on `document` exactly like today's
-  // `handleDocumentClickForTooltip` (closes an open tooltip on an outside click).
   handleDocumentClickForTooltip: (event: MouseEvent) => void;
 }
 
-export function buildAspirationFields(
-  doc: Document,
-  idPrefix: string,
-  initialValues?: { title?: string; description?: string; reason?: string },
-): AspirationFieldsResult {
+// Mirrors `buildAspirationFields`'s shape, with goal-specific copy. Deliberately omits an
+// `initialValues` parameter — no edit-goal modal exists in this scope, so that parameter would
+// be dead code (unlike `aspiration-fields.ts`, which needs it for `edit-aspiration-modal.ts`).
+export function buildGoalFields(doc: Document, idPrefix: string): GoalFieldsResult {
   const tooltipController = createTooltipController();
 
   const title = buildTextField(
@@ -58,7 +45,6 @@ export function buildAspirationFields(
       controlType: 'input',
       tooltipText: TITLE_TOOLTIP_TEXT,
       required: true,
-      initialValue: initialValues?.title,
     },
     tooltipController,
   );
@@ -71,7 +57,6 @@ export function buildAspirationFields(
       labelText: 'Description',
       controlType: 'textarea',
       tooltipText: DESCRIPTION_TOOLTIP_TEXT,
-      initialValue: initialValues?.description,
     },
     tooltipController,
   );
@@ -84,7 +69,6 @@ export function buildAspirationFields(
       labelText: 'Reason',
       controlType: 'textarea',
       tooltipText: REASON_TOOLTIP_TEXT,
-      initialValue: initialValues?.reason,
     },
     tooltipController,
   );
