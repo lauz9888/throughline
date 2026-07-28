@@ -389,7 +389,7 @@ describe('renderApp — Aspiration modal wiring', () => {
     expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
   });
 
-  it.each(['Goal', 'Task', 'Habit'])(
+  it.each(['Task', 'Habit'])(
     'does not open any dialog when "%s" is selected (still unwired)',
     (label) => {
       const root = document.createElement('div');
@@ -401,4 +401,57 @@ describe('renderApp — Aspiration modal wiring', () => {
       expect(document.querySelector('[role="dialog"]')).toBeNull();
     },
   );
+});
+
+describe('renderApp — Goal modal wiring', () => {
+  afterEach(() => {
+    // The modal portals to document.body (a sibling of root, not a descendant), so its DOM
+    // must be cleaned up here explicitly rather than by removing root alone.
+    document.body.innerHTML = '';
+    document.body.inert = false;
+  });
+
+  function openMenuAndClickItem(root: HTMLElement, label: string): void {
+    root.querySelector<HTMLButtonElement>('.add-item-button')!.click();
+    const items = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
+    const item = items.find((menuItem) => menuItem.textContent === label);
+    if (!item) throw new Error(`No menu item found with label "${label}"`);
+    item.click();
+  }
+
+  it('opens the Goal modal (portaled into document.body) when "Goal" is selected from the add-item menu (Requirement 1)', () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+
+    renderApp(root);
+    openMenuAndClickItem(root, 'Goal');
+
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    const labelledBy = dialog!.getAttribute('aria-labelledby');
+    expect(document.getElementById(labelledBy!)?.textContent).toBe('Create Goal');
+  });
+
+  it('does not open a second dialog when "Goal" is selected twice in a row (menu re-opened between clicks) (Requirement 5)', () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+
+    renderApp(root);
+    openMenuAndClickItem(root, 'Goal');
+    openMenuAndClickItem(root, 'Goal');
+
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+  });
+
+  it('remains idempotent for the Goal modal when renderApp is called a second time on the same root (exercises the new cleanupGoalModal wiring)', () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+
+    renderApp(root);
+    renderApp(root); // second call must tear down the first Goal modal instance before rebuilding
+
+    openMenuAndClickItem(root, 'Goal');
+
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+  });
 });
