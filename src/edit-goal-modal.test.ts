@@ -64,7 +64,11 @@ function setup(onChange: () => void = vi.fn()): {
   return { root, gridContainer, modal };
 }
 
-function openWithTile(modal: ModalInstance, gridContainer: HTMLElement, goal: Goal): HTMLButtonElement {
+function openWithTile(
+  modal: ModalInstance,
+  gridContainer: HTMLElement,
+  goal: Goal,
+): HTMLButtonElement {
   const tile = makeTriggerTile(goal);
   gridContainer.append(tile);
   modal.open(goal, tile);
@@ -342,7 +346,7 @@ describe('initEditGoalModal', () => {
     expect(stored[0]!.milestones.map((m) => m.title)).toEqual(['Updated milestone']);
   });
 
-  it("a milestone row left alone keeps its original stored id after save; a newly added row is saved with a new, different id (Requirement 18)", () => {
+  it('a milestone row left alone keeps its original stored id after save; a newly added row is saved with a new, different id (Requirement 18)', () => {
     const goal = makeGoal({ milestones: [{ id: 'milestone-1', title: 'Existing milestone' }] });
     seedStorage(goal);
     const { gridContainer, modal } = setup();

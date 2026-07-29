@@ -5,14 +5,15 @@ Date: 2026-07-29
 
 ## Context
 
-`goal-tiles` introduces the first *edit* (as opposed to create-only) flow for a nested,
+`goal-tiles` introduces the first _edit_ (as opposed to create-only) flow for a nested,
 repeatable field group (milestones). Unlike Title/Description/Reason — plain scalar fields where
 "update in place" is unambiguous — a milestone list raises a question scalar fields don't: when a
-row survives an edit unchanged-or-edited, should its underlying stored record be *the same
-record* (same `id`) with an updated title, or should the whole milestone list be deleted and
+row survives an edit unchanged-or-edited, should its underlying stored record be _the same
+record_ (same `id`) with an updated title, or should the whole milestone list be deleted and
 rebuilt fresh from the saved rows on every save?
 
 Two options were considered:
+
 1. **Rebuild wholesale**: on every save, discard the goal's existing `milestones` array entirely
    and regenerate fresh `{ id, title }` records from whatever rows are currently in the DOM.
    Simplest to implement (mirrors `saveGoal`'s existing `milestoneTitles: string[]` shape
@@ -45,4 +46,4 @@ milestone this row used to be." The tradeoff: `edit-goal-modal.ts` and `mileston
 slightly more bookkeeping (a per-row dataset attribute, a second accessor alongside
 `getNonBlankTitles`) than the simpler "rebuild wholesale" option would have. A future feature
 introducing milestone reordering would need to re-examine whether this id-preservation contract
-still holds once row *position* is no longer create-session-append-only.
+still holds once row _position_ is no longer create-session-append-only.

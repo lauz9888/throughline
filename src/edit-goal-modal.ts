@@ -1,6 +1,10 @@
 import { createFocusTrap } from './focus-trap';
 import { updateGoal, deleteGoal, type Goal } from './goal-storage';
-import { BLURB_TEXT as GOAL_BLURB_TEXT, buildGoalFields, type GoalFieldsResult } from './goal-fields';
+import {
+  BLURB_TEXT as GOAL_BLURB_TEXT,
+  buildGoalFields,
+  type GoalFieldsResult,
+} from './goal-fields';
 import { buildMilestoneRows, type MilestoneRowsResult } from './milestone-rows';
 import { openConfirmDialog } from './confirm-dialog';
 

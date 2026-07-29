@@ -80,7 +80,9 @@ test.describe('goal tile grid', () => {
     }
   });
 
-  test('orders goals sharing the same title by createdAt ascending (tiebreak)', async ({ page }) => {
+  test('orders goals sharing the same title by createdAt ascending (tiebreak)', async ({
+    page,
+  }) => {
     await seedGoals(page, [
       { title: 'Shared title', createdAt: '2024-03-01T00:00:00.000Z' },
       { title: 'Shared title', createdAt: '2024-01-01T00:00:00.000Z' },
@@ -108,7 +110,9 @@ test.describe('goal tile grid', () => {
     expect(Math.abs(box!.width - box!.height)).toBeLessThanOrEqual(1);
   });
 
-  test('shows an empty-state message when zero goals exist, and renders no tiles', async ({ page }) => {
+  test('shows an empty-state message when zero goals exist, and renders no tiles', async ({
+    page,
+  }) => {
     await page.goto('./');
 
     await expect(page.getByText("You don't have any goals yet")).toBeVisible();
@@ -352,17 +356,13 @@ test.describe('goal tile grid accessibility scans', () => {
   test('open Edit Goal modal (with a pre-populated milestone row) has no automatically detectable WCAG violations', async ({
     page,
   }) => {
-    await seedGoals(page, [
-      { title: 'Goal one', milestones: [{ title: 'First milestone' }] },
-    ]);
+    await seedGoals(page, [{ title: 'Goal one', milestones: [{ title: 'First milestone' }] }]);
     await page.getByRole('button', { name: 'Goal one', exact: true }).click();
     const dialog = editDialog(page);
     await expect(dialog).toBeVisible();
     // Prove the milestone DOM actually rendered before scanning it — otherwise
     // this scan would prove nothing about the milestone rows.
-    await expect(dialog.getByLabel('Milestone 1', { exact: true })).toHaveValue(
-      'First milestone',
-    );
+    await expect(dialog.getByLabel('Milestone 1', { exact: true })).toHaveValue('First milestone');
 
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     expect(results.violations).toEqual([]);

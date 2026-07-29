@@ -223,12 +223,15 @@ Given('the following goals are stored:', function (this: World, dataTable: DataT
 
 // --- Grid ---
 
-Then('the goal grid shows the empty-state message {string}', function (this: World, expected: string) {
-  const section = getGridSection(this);
-  const message = section.querySelector('.goal-grid__empty');
-  assert.ok(message, 'expected the empty-state message element to exist');
-  assert.equal(message!.textContent, expected);
-});
+Then(
+  'the goal grid shows the empty-state message {string}',
+  function (this: World, expected: string) {
+    const section = getGridSection(this);
+    const message = section.querySelector('.goal-grid__empty');
+    assert.ok(message, 'expected the empty-state message element to exist');
+    assert.equal(message!.textContent, expected);
+  },
+);
 
 Then('the goal grid contains no tiles', function (this: World) {
   assert.equal(getTiles(this).length, 0);
@@ -359,7 +362,7 @@ When(
 
 // --- Milestone rows (edit modal scoped) ---
 
-When("the edit goal modal's \"Add milestone\" button is clicked", function (this: World) {
+When('the edit goal modal\'s "Add milestone" button is clicked', function (this: World) {
   dispatchClick(this, getEditAddMilestoneButton(this));
 });
 
