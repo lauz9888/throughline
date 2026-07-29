@@ -17,10 +17,10 @@ When('the app is rendered', function (this: World) {
   renderedElement = renderApp(root as HTMLElement);
 });
 
-Then('the app root element contains exactly two top-level children', function (this: World) {
+Then('the app root element contains exactly three top-level children', function (this: World) {
   const root = this.document.getElementById('app');
   assert.ok(root, 'expected #app root element to exist in the test DOM');
-  assert.equal(root!.children.length, 2);
+  assert.equal(root!.children.length, 3);
 });
 
 Then(

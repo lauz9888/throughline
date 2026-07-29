@@ -11,6 +11,9 @@ import { openConfirmDialog } from './confirm-dialog';
 export interface GoalModalElements {
   root: HTMLElement; // the #app element; toggled `inert` while a dialog is open
   addItemButton: HTMLButtonElement; // focus-return target (Requirement 37)
+  onSave?: () => void; // called once, immediately after a successful save, before
+  // closeAndTeardown() runs — mirrors aspiration-modal.ts's identical hook, added so a newly
+  // created goal appears in the goal tile grid without requiring a reload.
 }
 
 export function initGoalModal(elements: GoalModalElements): {
@@ -117,6 +120,7 @@ export function initGoalModal(elements: GoalModalElements): {
       },
       win.localStorage,
     );
+    elements.onSave?.();
     closeAndTeardown();
   }
 

@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { saveGoal, readGoals, GOALS_STORAGE_KEY, type Goal } from './goal-storage';
+import {
+  saveGoal,
+  updateGoal,
+  deleteGoal,
+  readGoals,
+  sortGoalsAlphabetically,
+  GOALS_STORAGE_KEY,
+  type Goal,
+} from './goal-storage';
 import { ASPIRATIONS_STORAGE_KEY } from './aspiration-storage';
 
 function readStored(storage: Storage): unknown[] {
@@ -158,5 +166,231 @@ describe('readGoals', () => {
     expect(result).toHaveLength(2);
     expect(result[0]!.milestones).toHaveLength(1);
     expect(result[1]!.milestones).toHaveLength(2);
+  });
+});
+
+describe('updateGoal', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("updates the matching record's title/description/reason (trimmed), preserving id and createdAt", () => {
+    const original = saveGoal(
+      {
+        title: 'Original title',
+        description: 'Original desc',
+        reason: 'Original reason',
+        milestoneTitles: [],
+      },
+      window.localStorage,
+    );
+
+    const updated = updateGoal(
+      original.id,
+      {
+        title: '  New title  ',
+        description: '  New desc  ',
+        reason: '  New reason  ',
+        milestones: [],
+      },
+      window.localStorage,
+    );
+
+    expect(updated).toBeDefined();
+    expect(updated!.id).toBe(original.id);
+    expect(updated!.createdAt).toBe(original.createdAt);
+    expect(updated!.title).toBe('New title');
+    expect(updated!.description).toBe('New desc');
+    expect(updated!.reason).toBe('New reason');
+  });
+
+  it('leaves other records untouched', () => {
+    const first = saveGoal(
+      { title: 'First', description: '', reason: '', milestoneTitles: [] },
+      window.localStorage,
+    );
+    const second = saveGoal(
+      { title: 'Second', description: '', reason: '', milestoneTitles: [] },
+      window.localStorage,
+    );
+
+    updateGoal(
+      second.id,
+      { title: 'Updated second', description: '', reason: '', milestones: [] },
+      window.localStorage,
+    );
+
+    const stored = readGoals(window.localStorage);
+    const untouchedFirst = stored.find((g) => g.id === first.id);
+    expect(untouchedFirst?.title).toBe('First');
+  });
+
+  it('returns the updated record', () => {
+    const original = saveGoal(
+      { title: 'Title', description: '', reason: '', milestoneTitles: [] },
+      window.localStorage,
+    );
+
+    const updated = updateGoal(
+      original.id,
+      { title: 'Changed', description: '', reason: '', milestones: [] },
+      window.localStorage,
+    );
+
+    expect(updated?.title).toBe('Changed');
+  });
+
+  it('returns undefined without throwing for an unknown id, and does not write a matching record', () => {
+    saveGoal(
+      { title: 'Existing', description: '', reason: '', milestoneTitles: [] },
+      window.localStorage,
+    );
+
+    let result: Goal | undefined;
+    expect(() => {
+      result = updateGoal(
+        'unknown-id',
+        { title: 'X', description: '', reason: '', milestones: [] },
+        window.localStorage,
+      );
+    }).not.toThrow();
+
+    expect(result).toBeUndefined();
+    expect(readGoals(window.localStorage)).toHaveLength(1);
+  });
+
+  it('preserves a supplied milestone id (title updated in place) and generates a fresh id for a milestone entry without one (Requirement 18)', () => {
+    const original = saveGoal(
+      {
+        title: 'Run a marathon',
+        description: '',
+        reason: '',
+        milestoneTitles: ['Run a half-marathon', 'Run a 10k'],
+      },
+      window.localStorage,
+    );
+    const [first, second] = original.milestones;
+
+    const updated = updateGoal(
+      original.id,
+      {
+        title: original.title,
+        description: original.description,
+        reason: original.reason,
+        milestones: [
+          { id: first!.id, title: '  Updated half-marathon  ' },
+          { title: 'Brand new milestone' }, // no id supplied — must get a fresh one
+        ],
+      },
+      window.localStorage,
+    );
+
+    expect(updated).toBeDefined();
+    expect(updated!.milestones).toHaveLength(2);
+    expect(updated!.milestones[0]!.id).toBe(first!.id);
+    expect(updated!.milestones[0]!.title).toBe('Updated half-marathon');
+    expect(updated!.milestones[1]!.id).toBeTruthy();
+    expect(updated!.milestones[1]!.id).not.toBe(first!.id);
+    expect(updated!.milestones[1]!.id).not.toBe(second!.id);
+    expect(updated!.milestones[1]!.title).toBe('Brand new milestone');
+  });
+
+  it('persists the milestones exactly as returned, in the same order supplied', () => {
+    const original = saveGoal(
+      { title: 'Goal', description: '', reason: '', milestoneTitles: ['A', 'B'] },
+      window.localStorage,
+    );
+
+    updateGoal(
+      original.id,
+      {
+        title: original.title,
+        description: original.description,
+        reason: original.reason,
+        milestones: [{ title: 'Only remaining milestone' }],
+      },
+      window.localStorage,
+    );
+
+    const stored = readGoals(window.localStorage);
+    expect(stored[0]!.milestones).toHaveLength(1);
+    expect(stored[0]!.milestones[0]!.title).toBe('Only remaining milestone');
+  });
+});
+
+describe('deleteGoal', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('removes only the matching record, including its milestones, leaving others untouched', () => {
+    const first = saveGoal(
+      { title: 'First', description: '', reason: '', milestoneTitles: ['Step 1'] },
+      window.localStorage,
+    );
+    const second = saveGoal(
+      { title: 'Second', description: '', reason: '', milestoneTitles: [] },
+      window.localStorage,
+    );
+
+    deleteGoal(first.id, window.localStorage);
+
+    const stored = readGoals(window.localStorage);
+    expect(stored).toHaveLength(1);
+    expect(stored[0]!.id).toBe(second.id);
+  });
+
+  it('is a no-throw no-op for an unknown id', () => {
+    saveGoal(
+      { title: 'Only', description: '', reason: '', milestoneTitles: [] },
+      window.localStorage,
+    );
+
+    expect(() => deleteGoal('unknown-id', window.localStorage)).not.toThrow();
+    expect(readGoals(window.localStorage)).toHaveLength(1);
+  });
+});
+
+describe('sortGoalsAlphabetically', () => {
+  function make(title: string, createdAt: string, id = `${title}-${createdAt}`): Goal {
+    return { id, title, description: '', reason: '', milestones: [], createdAt };
+  }
+
+  it('orders titles case-insensitively (e.g. apple, banana, Cherry)', () => {
+    const input = [
+      make('banana', '2024-01-01T00:00:00.000Z'),
+      make('Cherry', '2024-01-02T00:00:00.000Z'),
+      make('apple', '2024-01-03T00:00:00.000Z'),
+    ];
+
+    const sorted = sortGoalsAlphabetically(input);
+
+    expect(sorted.map((g) => g.title)).toEqual(['apple', 'banana', 'Cherry']);
+  });
+
+  it('breaks ties for equal titles by ascending createdAt', () => {
+    const later = make('Same title', '2024-06-01T00:00:00.000Z', 'later');
+    const earlier = make('Same title', '2024-01-01T00:00:00.000Z', 'earlier');
+
+    const sorted = sortGoalsAlphabetically([later, earlier]);
+
+    expect(sorted[0]!.id).toBe('earlier');
+    expect(sorted[1]!.id).toBe('later');
+  });
+
+  it('returns an empty array for empty input', () => {
+    expect(sortGoalsAlphabetically([])).toEqual([]);
+  });
+
+  it('does not mutate its input array', () => {
+    const input = [
+      make('banana', '2024-01-01T00:00:00.000Z'),
+      make('apple', '2024-01-02T00:00:00.000Z'),
+    ];
+    const inputCopy = [...input];
+
+    sortGoalsAlphabetically(input);
+
+    expect(input).toEqual(inputCopy);
   });
 });

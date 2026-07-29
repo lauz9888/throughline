@@ -3,7 +3,10 @@ import { initAspirationModal } from './aspiration-modal';
 import { initAspirationGrid } from './aspiration-grid';
 import { initEditAspirationModal } from './edit-aspiration-modal';
 import { initGoalModal } from './goal-modal';
+import { initGoalGrid } from './goal-grid';
+import { initEditGoalModal } from './edit-goal-modal';
 import type { Aspiration } from './aspiration-storage';
+import type { Goal } from './goal-storage';
 
 export const ADD_ITEM_TYPES = ['Aspiration', 'Goal', 'Task', 'Habit'] as const;
 
@@ -12,6 +15,8 @@ let cleanupAspirationModal: (() => void) | undefined;
 let cleanupAspirationGrid: (() => void) | undefined;
 let cleanupEditAspirationModal: (() => void) | undefined;
 let cleanupGoalModal: (() => void) | undefined;
+let cleanupGoalGrid: (() => void) | undefined;
+let cleanupEditGoalModal: (() => void) | undefined;
 
 export function renderApp(root: HTMLElement): HTMLElement {
   cleanupAddItemMenu?.();
@@ -19,6 +24,8 @@ export function renderApp(root: HTMLElement): HTMLElement {
   cleanupAspirationGrid?.();
   cleanupEditAspirationModal?.();
   cleanupGoalModal?.();
+  cleanupGoalGrid?.();
+  cleanupEditGoalModal?.();
 
   const doc = root.ownerDocument;
   const win = doc.defaultView!;
@@ -76,7 +83,21 @@ export function renderApp(root: HTMLElement): HTMLElement {
   });
   cleanupAspirationGrid = destroyGrid;
 
-  root.replaceChildren(topBar, gridSection); // grid below .top-bar
+  // Forward-reference resolves the same circular need for the Goal grid/Edit Goal modal pair.
+  let openEditGoalModal: (goal: Goal, trigger: HTMLButtonElement) => void = () => {};
+
+  const {
+    section: goalGridSection,
+    render: renderGoalGrid,
+    destroy: destroyGoalGrid,
+  } = initGoalGrid({
+    root,
+    storage: win.localStorage,
+    onTileSelect: (goal, tile) => openEditGoalModal(goal, tile),
+  });
+  cleanupGoalGrid = destroyGoalGrid;
+
+  root.replaceChildren(topBar, gridSection, goalGridSection); // Goals below Aspirations, below .top-bar
 
   const { open: openAspirationModal, destroy: destroyAspirationModal } = initAspirationModal({
     root,
@@ -97,10 +118,21 @@ export function renderApp(root: HTMLElement): HTMLElement {
   const { open: openGoalModal, destroy: destroyGoalModal } = initGoalModal({
     root,
     addItemButton: button,
+    onSave: renderGoalGrid,
   });
   cleanupGoalModal = destroyGoalModal;
 
+  const editGoalModal = initEditGoalModal({
+    root,
+    gridContainer: goalGridSection,
+    storage: win.localStorage,
+    onChange: renderGoalGrid,
+  });
+  openEditGoalModal = editGoalModal.open;
+  cleanupEditGoalModal = editGoalModal.destroy;
+
   renderGrid(); // initial population from storage
+  renderGoalGrid();
 
   cleanupAddItemMenu = initAddItemMenu({
     button,
