@@ -401,15 +401,6 @@ When(
   },
 );
 
-Then(
-  "the edit goal modal's milestone row titles are:",
-  function (this: World, dataTable: DataTable) {
-    const expected = dataTable.raw().map((row) => row[0]!);
-    const actual = getEditMilestoneRows(this).map((row) => getEditMilestoneInput(row).value);
-    assert.deepEqual(actual, expected);
-  },
-);
-
 // --- Persistence ---
 
 Then(
