@@ -30,10 +30,12 @@ export interface GoalFieldsResult {
   handleDocumentClickForTooltip: (event: MouseEvent) => void;
 }
 
-// Mirrors `buildAspirationFields`'s shape, with goal-specific copy. Deliberately omits an
-// `initialValues` parameter — no edit-goal modal exists in this scope, so that parameter would
-// be dead code (unlike `aspiration-fields.ts`, which needs it for `edit-aspiration-modal.ts`).
-export function buildGoalFields(doc: Document, idPrefix: string): GoalFieldsResult {
+// Mirrors `buildAspirationFields`'s shape, with goal-specific copy.
+export function buildGoalFields(
+  doc: Document,
+  idPrefix: string,
+  initialValues?: { title?: string; description?: string; reason?: string },
+): GoalFieldsResult {
   const tooltipController = createTooltipController();
 
   const title = buildTextField(
@@ -45,6 +47,7 @@ export function buildGoalFields(doc: Document, idPrefix: string): GoalFieldsResu
       controlType: 'input',
       tooltipText: TITLE_TOOLTIP_TEXT,
       required: true,
+      initialValue: initialValues?.title,
     },
     tooltipController,
   );
@@ -57,6 +60,7 @@ export function buildGoalFields(doc: Document, idPrefix: string): GoalFieldsResu
       labelText: 'Description',
       controlType: 'textarea',
       tooltipText: DESCRIPTION_TOOLTIP_TEXT,
+      initialValue: initialValues?.description,
     },
     tooltipController,
   );
@@ -69,6 +73,7 @@ export function buildGoalFields(doc: Document, idPrefix: string): GoalFieldsResu
       labelText: 'Reason',
       controlType: 'textarea',
       tooltipText: REASON_TOOLTIP_TEXT,
+      initialValue: initialValues?.reason,
     },
     tooltipController,
   );

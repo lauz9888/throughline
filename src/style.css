@@ -364,6 +364,7 @@ body {
 .modal__save:focus-visible,
 .modal__actions button:focus-visible,
 .aspiration-tile:focus-visible,
+.goal-tile:focus-visible,
 .modal__delete:focus-visible,
 .modal__milestone-add:focus-visible,
 .modal__milestone-remove:focus-visible {
@@ -414,6 +415,55 @@ body {
 }
 
 .aspiration-grid__empty {
+  color: #1a1a1a;
+  font-size: 1.0625rem;
+}
+
+.goal-grid-section {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.goal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.goal-tile {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: #e0f2e4; /* same verified green as .modal--goal (Requirement 3) */
+  border: 1px solid #8a6d3b;
+  border-radius: 10px; /* Requirement 3 */
+  cursor: pointer;
+}
+
+.goal-tile:hover {
+  /* Cosmetic hover-darken only, mirroring .aspiration-tile:hover's pattern; not itself a new
+     contrast pair to verify — darkening a background under unchanged #1a1a1a text can only
+     increase contrast relative to the already-verified base-state minimum, never reduce it. */
+  background: #d2ead8;
+}
+
+.goal-tile__title {
+  color: #1a1a1a; /* Requirement 4 — same verified pair as .modal--goal text on #e0f2e4 */
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  word-break: break-word; /* Requirement 5 — visual-only truncation */
+  text-overflow: ellipsis;
+}
+
+.goal-grid__empty {
   color: #1a1a1a;
   font-size: 1.0625rem;
 }
