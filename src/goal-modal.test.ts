@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { axe } from 'jest-axe';
 import { initGoalModal } from './goal-modal';
 
@@ -498,5 +498,50 @@ describe('initGoalModal', () => {
       rules: { 'color-contrast': { enabled: false } },
     });
     expect(results).toHaveNoViolations();
+  });
+});
+
+describe('initGoalModal — onSave hook (mirrors initAspirationModal, Issue #74 precedent)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    currentModal?.destroy();
+    currentModal = undefined;
+    document.body.innerHTML = '';
+    document.body.inert = false;
+  });
+
+  it('does not throw and still closes the modal when no onSave hook is provided (true no-op default)', () => {
+    const { modal } = setup();
+
+    modal.open();
+
+    const dialog = getDialog();
+    setValue(dialog.querySelector<HTMLInputElement>('#goal-field-title')!, 'Some title');
+    const saveButton = dialog.querySelector<HTMLButtonElement>('.modal__save')!;
+
+    expect(() => saveButton.click()).not.toThrow();
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('calls the onSave hook exactly once, before the modal finishes closing, when provided', () => {
+    const { root, addItemButton } = buildFixture();
+    const onSave = vi.fn(() => {
+      expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    });
+    const modal = initGoalModal({ root, addItemButton, onSave });
+    currentModal = modal;
+
+    modal.open();
+
+    const dialog = getDialog();
+    setValue(dialog.querySelector<HTMLInputElement>('#goal-field-title')!, 'Some title');
+    dialog.querySelector<HTMLButtonElement>('.modal__save')!.click();
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
 });

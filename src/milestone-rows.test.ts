@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { buildMilestoneRows, type MilestoneRowsResult } from './milestone-rows';
 
 function setup(): MilestoneRowsResult {
@@ -254,5 +254,165 @@ describe('buildMilestoneRows', () => {
     const blurb = result.section.querySelector('.modal__blurb');
     expect(blurb).not.toBeNull();
     expect(blurb?.textContent).toContain('milestone');
+  });
+});
+
+// `initialMilestones`/`onRowsChanged`/`getMilestonesForSave` support edit-goal-modal.ts's
+// pre-population and dirty-tracking needs (design.md "src/milestone-rows.ts (change)", ADR 0005).
+describe('buildMilestoneRows — initialMilestones / onRowsChanged (edit-goal-modal support)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('pre-populates one row per entry in initialMilestones, in stored order, with correct labels and pre-filled values', () => {
+    const result = buildMilestoneRows(document, 'edit-goal', {
+      initialMilestones: [
+        { id: 'm1', title: 'First milestone' },
+        { id: 'm2', title: 'Second milestone' },
+      ],
+    });
+    document.body.append(result.section);
+
+    expect(result.rowCount()).toBe(2);
+    const inputs = rowInputs(result);
+    expect(inputs.map((input) => input.value)).toEqual(['First milestone', 'Second milestone']);
+
+    const labels = Array.from(result.section.querySelectorAll('label')).map(
+      (label) => label.textContent,
+    );
+    expect(labels).toEqual(['Milestone 1', 'Milestone 2']);
+
+    const removeButtons = rowRemoveButtons(result);
+    expect(removeButtons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Remove milestone 1',
+      'Remove milestone 2',
+    ]);
+  });
+
+  it('is a no-op producing zero rows when initialMilestones is omitted (existing Create-modal call site)', () => {
+    const result = buildMilestoneRows(document, 'goal');
+    document.body.append(result.section);
+
+    expect(result.rowCount()).toBe(0);
+  });
+
+  it('pre-population does not write to the aria-live status region', () => {
+    const result = buildMilestoneRows(document, 'edit-goal', {
+      initialMilestones: [{ id: 'm1', title: 'First milestone' }],
+    });
+    document.body.append(result.section);
+
+    expect(liveRegion(result).textContent).toBe('');
+  });
+
+  it('pre-population does not move focus to any pre-populated row or the addButton', () => {
+    const result = buildMilestoneRows(document, 'edit-goal', {
+      initialMilestones: [{ id: 'm1', title: 'First milestone' }],
+    });
+    document.body.append(result.section);
+
+    const input = rowInputs(result)[0]!;
+    expect(document.activeElement).not.toBe(input);
+    expect(document.activeElement).not.toBe(result.addButton);
+  });
+
+  it('a user-triggered addRow() after pre-population continues numbering from N + 1, and announces + focuses the new row', () => {
+    const result = buildMilestoneRows(document, 'edit-goal', {
+      initialMilestones: [
+        { id: 'm1', title: 'First milestone' },
+        { id: 'm2', title: 'Second milestone' },
+      ],
+    });
+    document.body.append(result.section);
+    const region = liveRegion(result);
+
+    result.addButton.click();
+
+    expect(result.rowCount()).toBe(3);
+    const removeButtons = rowRemoveButtons(result);
+    expect(removeButtons[2]!.getAttribute('aria-label')).toBe('Remove milestone 3');
+    expect(region.textContent).toBe('Milestone 3 added.');
+    expect(document.activeElement).toBe(rowInputs(result)[2]);
+  });
+
+  it("getMilestonesForSave() returns each pre-populated row's original id, undefined for a newly added row, and excludes blank rows", () => {
+    const result = buildMilestoneRows(document, 'edit-goal', {
+      initialMilestones: [
+        { id: 'm1', title: 'First milestone' },
+        { id: 'm2', title: 'Second milestone' },
+      ],
+    });
+    document.body.append(result.section);
+
+    result.addButton.click();
+    const inputs = rowInputs(result);
+    setValue(inputs[2]!, '  Third (new) milestone  ');
+
+    expect(result.getMilestonesForSave()).toEqual([
+      { id: 'm1', title: 'First milestone' },
+      { id: 'm2', title: 'Second milestone' },
+      { id: undefined, title: 'Third (new) milestone' },
+    ]);
+  });
+
+  it('getMilestonesForSave() excludes a blank pre-populated row and reflects removal of a row', () => {
+    const result = buildMilestoneRows(document, 'edit-goal', {
+      initialMilestones: [
+        { id: 'm1', title: 'First milestone' },
+        { id: 'm2', title: 'Second milestone' },
+      ],
+    });
+    document.body.append(result.section);
+
+    const inputs = rowInputs(result);
+    setValue(inputs[1]!, '   '); // blank out the second pre-populated row
+
+    expect(result.getMilestonesForSave()).toEqual([{ id: 'm1', title: 'First milestone' }]);
+
+    rowRemoveButtons(result)[0]!.click(); // remove the (only remaining, non-blank) first row
+
+    expect(result.getMilestonesForSave()).toEqual([]);
+  });
+
+  it('onRowsChanged fires after addRow()', () => {
+    const onRowsChanged = vi.fn();
+    const result = buildMilestoneRows(document, 'edit-goal', { onRowsChanged });
+    document.body.append(result.section);
+
+    result.addButton.click();
+
+    expect(onRowsChanged).toHaveBeenCalledTimes(1);
+  });
+
+  it('onRowsChanged fires after removeRow()', () => {
+    const onRowsChanged = vi.fn();
+    const result = buildMilestoneRows(document, 'edit-goal', { onRowsChanged });
+    document.body.append(result.section);
+    result.addButton.click();
+    onRowsChanged.mockClear();
+
+    rowRemoveButtons(result)[0]!.click();
+
+    expect(onRowsChanged).toHaveBeenCalledTimes(1);
+  });
+
+  it("onRowsChanged fires on a row's input event (in-place title edit)", () => {
+    const onRowsChanged = vi.fn();
+    const result = buildMilestoneRows(document, 'edit-goal', { onRowsChanged });
+    document.body.append(result.section);
+    result.addButton.click();
+    onRowsChanged.mockClear();
+
+    setValue(rowInputs(result)[0]!, 'Edited title');
+
+    expect(onRowsChanged).toHaveBeenCalledTimes(1);
+  });
+
+  it('onRowsChanged is safely omittable — the existing Create-modal call site (no options argument) still works unchanged', () => {
+    const result = buildMilestoneRows(document, 'goal');
+    document.body.append(result.section);
+
+    expect(() => result.addButton.click()).not.toThrow();
+    expect(() => rowRemoveButtons(result)[0]!.click()).not.toThrow();
   });
 });

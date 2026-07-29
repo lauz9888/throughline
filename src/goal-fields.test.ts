@@ -25,6 +25,26 @@ describe('buildGoalFields', () => {
     expect(first.titleInput.id).not.toBe(second.titleInput.id);
   });
 
+  it('pre-fills titleInput/descriptionInput/reasonInput from initialValues', () => {
+    const result = buildGoalFields(document, 'edit-goal', {
+      title: 'My title',
+      description: 'My description',
+      reason: 'My reason',
+    });
+
+    expect(result.titleInput.value).toBe('My title');
+    expect(result.descriptionInput.value).toBe('My description');
+    expect(result.reasonInput.value).toBe('My reason');
+  });
+
+  it('leaves fields empty when initialValues is omitted (Create usage)', () => {
+    const result = buildGoalFields(document, 'goal');
+
+    expect(result.titleInput.value).toBe('');
+    expect(result.descriptionInput.value).toBe('');
+    expect(result.reasonInput.value).toBe('');
+  });
+
   it('labels Title/Description/Reason correctly (Requirements 6, 7, 8, 38)', () => {
     const result = buildGoalFields(document, 'goal');
     appendFields(result);
