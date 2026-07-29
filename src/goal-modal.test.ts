@@ -368,10 +368,7 @@ describe('initGoalModal', () => {
     expect(stored[0]!.title).toBe('Run a marathon');
     expect(stored[0]!.description).toBe('26.2 miles');
     expect(stored[0]!.reason).toBe('For fitness');
-    expect(stored[0]!.milestones.map((m) => m.title)).toEqual([
-      'Run a half-marathon',
-      'Run a 10k',
-    ]);
+    expect(stored[0]!.milestones.map((m) => m.title)).toEqual(['Run a half-marathon', 'Run a 10k']);
   });
 
   it('saves successfully with zero milestone rows (Requirement 15)', () => {

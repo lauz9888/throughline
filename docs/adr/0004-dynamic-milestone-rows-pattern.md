@@ -19,9 +19,9 @@ Two questions needed a concrete answer:
 1. **How to number/label rows, given rows can be removed from the middle of the list.**
    Renumbering every remaining row's `id`/`for`/`aria-label` on every removal (so labels always
    match visual position, e.g. "Milestone 2" always means "the second row currently on screen")
-   was considered, but rejected: it requires rewriting DOM ids on *every* remaining row on *every*
+   was considered, but rejected: it requires rewriting DOM ids on _every_ remaining row on _every_
    single removal, which is a correctness hazard (nothing may depend on those ids remaining
-   stable — the ids only need to be *unique*, not order-encoding) for no requirement-mandated
+   stable — the ids only need to be _unique_, not order-encoding) for no requirement-mandated
    benefit. The alternative — a permanently unique, monotonically increasing, never-reused counter
    assigned once per row at creation — satisfies "distinct enough to be unambiguous" (the actual
    requirement) with no renumbering step at all.

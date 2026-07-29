@@ -8,15 +8,11 @@ function setup(): MilestoneRowsResult {
 }
 
 function rowInputs(result: MilestoneRowsResult): HTMLInputElement[] {
-  return Array.from(
-    result.section.querySelectorAll<HTMLInputElement>('.modal__milestone-input'),
-  );
+  return Array.from(result.section.querySelectorAll<HTMLInputElement>('.modal__milestone-input'));
 }
 
 function rowRemoveButtons(result: MilestoneRowsResult): HTMLButtonElement[] {
-  return Array.from(
-    result.section.querySelectorAll<HTMLButtonElement>('.modal__milestone-remove'),
-  );
+  return Array.from(result.section.querySelectorAll<HTMLButtonElement>('.modal__milestone-remove'));
 }
 
 function liveRegion(result: MilestoneRowsResult): HTMLElement {
@@ -50,7 +46,7 @@ describe('buildMilestoneRows', () => {
     expect(result.section.querySelectorAll('.modal__milestone-add')).toHaveLength(1);
   });
 
-  it('clicking addButton adds exactly one row with a uniquely-id\'d input and an accessibly-named remove control (Requirement 14)', () => {
+  it("clicking addButton adds exactly one row with a uniquely-id'd input and an accessibly-named remove control (Requirement 14)", () => {
     const result = setup();
 
     result.addButton.click();
@@ -65,7 +61,7 @@ describe('buildMilestoneRows', () => {
     expect(removeButtons[0]!.getAttribute('aria-label')).toBe('Remove milestone 1');
   });
 
-  it('each row label is distinct per row, referencing the row\'s number (Requirement 38)', () => {
+  it("each row label is distinct per row, referencing the row's number (Requirement 38)", () => {
     const result = setup();
 
     result.addButton.click();
@@ -176,7 +172,7 @@ describe('buildMilestoneRows', () => {
     expect(result.getNonBlankTitles()).toEqual(['B', 'C']);
   });
 
-  it('focus moves to the new row\'s title input immediately after clicking addButton (Requirement 40)', () => {
+  it("focus moves to the new row's title input immediately after clicking addButton (Requirement 40)", () => {
     const result = setup();
 
     result.addButton.click();
@@ -185,7 +181,7 @@ describe('buildMilestoneRows', () => {
     expect(document.activeElement).toBe(input);
   });
 
-  it('a second addButton click moves focus to the second (newest) row\'s input', () => {
+  it("a second addButton click moves focus to the second (newest) row's input", () => {
     const result = setup();
 
     result.addButton.click();

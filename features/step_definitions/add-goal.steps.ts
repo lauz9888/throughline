@@ -83,7 +83,7 @@ function getAddMilestoneButton(world: World): HTMLButtonElement {
 function getMilestoneRows(world: World): HTMLElement[] {
   const dialog = getMainDialog(world);
   const list = dialog.querySelector('.modal__milestones-list');
-  assert.ok(list, 'expected the goal modal\'s milestones list to exist');
+  assert.ok(list, "expected the goal modal's milestones list to exist");
   return Array.from(list!.children) as HTMLElement[];
 }
 
@@ -260,7 +260,7 @@ When("the goal modal's backdrop is clicked", function (this: World) {
 
 // --- Milestones ---
 
-When("the goal modal's \"Add milestone\" button is clicked", function (this: World) {
+When('the goal modal\'s "Add milestone" button is clicked', function (this: World) {
   dispatchClick(this, getAddMilestoneButton(this));
 });
 
@@ -294,13 +294,10 @@ Then(
   },
 );
 
-When(
-  "the goal modal's milestone row {int} is removed",
-  function (this: World, position: number) {
-    const row = getMilestoneRow(this, position);
-    dispatchClick(this, getMilestoneRemoveButton(row));
-  },
-);
+When("the goal modal's milestone row {int} is removed", function (this: World, position: number) {
+  const row = getMilestoneRow(this, position);
+  dispatchClick(this, getMilestoneRemoveButton(row));
+});
 
 Then("the goal modal's milestone row titles are:", function (this: World, dataTable: DataTable) {
   const expected = dataTableSingleColumn(dataTable);

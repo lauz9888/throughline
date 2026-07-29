@@ -41,9 +41,7 @@ test.describe('create goal modal', () => {
     await expect(dialog.getByLabel('Description', { exact: true })).toBeVisible();
     await expect(dialog.getByLabel('Reason', { exact: true })).toBeVisible();
     await expect(dialog.getByRole('heading', { name: 'Milestones' })).toBeVisible();
-    await expect(
-      dialog.getByText(/A milestone is a step on the way to this goal/),
-    ).toBeVisible();
+    await expect(dialog.getByText(/A milestone is a step on the way to this goal/)).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Add milestone' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Save' })).toBeVisible();
 
@@ -354,9 +352,7 @@ test.describe('create goal modal', () => {
 
     await expect(page.getByRole('alertdialog')).toHaveCount(0);
     await expect(page.getByRole('dialog', { name: 'Create Goal' })).toBeVisible();
-    await expect(page.getByLabel('Title', { exact: true })).toHaveValue(
-      'Get promoted to manager',
-    );
+    await expect(page.getByLabel('Title', { exact: true })).toHaveValue('Get promoted to manager');
     await expect(page.getByLabel('Description', { exact: true })).toHaveValue(
       'Move from IC to manager role',
     );

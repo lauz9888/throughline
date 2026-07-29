@@ -165,12 +165,10 @@ describe('openConfirmDialog', () => {
     const onCancel = vi.fn();
     const onConfirm = vi.fn();
 
-    openConfirmDialog(
-      document,
-      parentDialog,
-      buildOptions({ dialogClassName: 'modal--goal' }),
-      { onCancel, onConfirm },
-    );
+    openConfirmDialog(document, parentDialog, buildOptions({ dialogClassName: 'modal--goal' }), {
+      onCancel,
+      onConfirm,
+    });
 
     const dialog = getAlertDialog()!;
     expect(dialog.className).toBe('modal modal--confirm modal--goal');

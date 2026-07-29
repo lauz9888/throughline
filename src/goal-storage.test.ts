@@ -140,10 +140,7 @@ describe('readGoals', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.title).toBe('Run a marathon');
-    expect(result[0]!.milestones.map((m) => m.title)).toEqual([
-      'Run a half-marathon',
-      'Run a 10k',
-    ]);
+    expect(result[0]!.milestones.map((m) => m.title)).toEqual(['Run a half-marathon', 'Run a 10k']);
   });
 
   it('reads two independently saved goals, each with their own milestone list (Requirements 27, 30)', () => {
