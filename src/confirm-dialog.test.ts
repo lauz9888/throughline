@@ -160,4 +160,27 @@ describe('openConfirmDialog', () => {
     );
     expect(document.activeElement).toBe(confirmButton);
   });
+
+  it('appends dialogClassName to the default "modal modal--confirm" classes when supplied (add-goal design decision 3)', () => {
+    const onCancel = vi.fn();
+    const onConfirm = vi.fn();
+
+    openConfirmDialog(document, parentDialog, buildOptions({ dialogClassName: 'modal--goal' }), {
+      onCancel,
+      onConfirm,
+    });
+
+    const dialog = getAlertDialog()!;
+    expect(dialog.className).toBe('modal modal--confirm modal--goal');
+  });
+
+  it('omits any extra class and produces exactly "modal modal--confirm" when dialogClassName is not supplied (no behavior change for existing callers)', () => {
+    const onCancel = vi.fn();
+    const onConfirm = vi.fn();
+
+    openConfirmDialog(document, parentDialog, buildOptions(), { onCancel, onConfirm });
+
+    const dialog = getAlertDialog()!;
+    expect(dialog.className).toBe('modal modal--confirm');
+  });
 });

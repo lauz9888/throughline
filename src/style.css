@@ -364,7 +364,9 @@ body {
 .modal__save:focus-visible,
 .modal__actions button:focus-visible,
 .aspiration-tile:focus-visible,
-.modal__delete:focus-visible {
+.modal__delete:focus-visible,
+.modal__milestone-add:focus-visible,
+.modal__milestone-remove:focus-visible {
   outline: 2px solid #1a1a1a;
   outline-offset: 2px;
 }
@@ -447,4 +449,129 @@ body {
 }
 .modal__delete-confirm:hover {
   background: #6f5730;
+}
+
+/* Green color scheme, scoped to the Goal modal (and its own confirm dialog, via
+   dialogClassName — Requirement 24) only. Mirrors the Aspiration modal's purple scheme
+   (.modal / .modal__save / .modal__info) using a `.modal--goal` modifier class instead of new
+   standalone selectors, so shared chrome (.modal__title, .modal__field, .modal__cancel/
+   .modal__discard, focus outlines, etc.) is untouched — Requirement 33. */
+.modal--goal {
+  /* Light pastel green. #1a1a1a text on this background is ~15.3:1, comfortably over the
+     4.5:1 AA minimum for normal text. */
+  background: #e0f2e4;
+}
+
+.modal--goal .modal__save {
+  /* White text on this background is ~5.4:1, over the 4.5:1 AA minimum; this green against the
+     modal's own #e0f2e4 background is ~4.6:1, over the 3:1 AA minimum for UI component
+     boundaries (Requirement 32). */
+  background: #1e7a42;
+}
+
+.modal--goal .modal__save:hover:not(:disabled) {
+  background: #155f34;
+}
+
+.modal--goal .modal__save:disabled {
+  /* Muted/desaturated version of the enabled #1e7a42 green (mirrors the purple scheme's
+     #b7a3cf treatment) so the disabled state reads as "green, just muted." Disabled controls
+     are exempt from WCAG 1.4.3/1.4.11, consistent with the Aspiration modal's own
+     disabled-state comment. */
+  background: #a9c9b0;
+}
+
+.modal--goal .modal__info {
+  /* Same green as .modal__save, reused for the same reason the Aspiration modal reuses its
+     purple for both — ~4.6:1 against the modal's #e0f2e4 background, over the 3:1 AA minimum. */
+  border-color: #1e7a42;
+  color: #1e7a42;
+}
+
+.modal__milestones {
+  margin: 0 0 1rem;
+}
+
+.modal__milestones-heading {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #1a1a1a;
+  margin: 0 0 0.5rem;
+}
+
+.modal__milestones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.modal__milestone-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modal__milestone-row label {
+  flex: 0 0 auto;
+}
+
+.modal__milestone-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.modal__milestone-remove {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  /* Neutral near-black, not green — this is not one of the three selectors (.modal /
+     .modal__save / .modal__info) Requirement 31 names for the purple→green swap. #1a1a1a on
+     the modal's #e0f2e4 background is ~15.3:1. */
+  color: #1a1a1a;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal__milestone-remove:hover {
+  background: #f4ede0;
+}
+
+.modal__milestone-add {
+  /* Neutral gold, matching .modal__cancel's already-verified pair — deliberately not green,
+     for the same reason as .modal__milestone-remove above. */
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: 1px solid #8a6d3b;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1a1a1a;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.modal__milestone-add:hover {
+  background: #f4ede0;
+}
+
+/* General-purpose visually-hidden-but-AT-announced utility (distinct from
+   .modal__tooltip-text, which toggles between this same clip technique and a visible floating
+   box — this class has no visible variant, it is always hidden). Used by the Milestones
+   section's aria-live status region (Requirement 42). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

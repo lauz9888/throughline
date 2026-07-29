@@ -2,6 +2,7 @@ import { initAddItemMenu } from './add-item-menu';
 import { initAspirationModal } from './aspiration-modal';
 import { initAspirationGrid } from './aspiration-grid';
 import { initEditAspirationModal } from './edit-aspiration-modal';
+import { initGoalModal } from './goal-modal';
 import type { Aspiration } from './aspiration-storage';
 
 export const ADD_ITEM_TYPES = ['Aspiration', 'Goal', 'Task', 'Habit'] as const;
@@ -10,12 +11,14 @@ let cleanupAddItemMenu: (() => void) | undefined;
 let cleanupAspirationModal: (() => void) | undefined;
 let cleanupAspirationGrid: (() => void) | undefined;
 let cleanupEditAspirationModal: (() => void) | undefined;
+let cleanupGoalModal: (() => void) | undefined;
 
 export function renderApp(root: HTMLElement): HTMLElement {
   cleanupAddItemMenu?.();
   cleanupAspirationModal?.();
   cleanupAspirationGrid?.();
   cleanupEditAspirationModal?.();
+  cleanupGoalModal?.();
 
   const doc = root.ownerDocument;
   const win = doc.defaultView!;
@@ -91,6 +94,12 @@ export function renderApp(root: HTMLElement): HTMLElement {
   openEditModal = editModal.open;
   cleanupEditAspirationModal = editModal.destroy;
 
+  const { open: openGoalModal, destroy: destroyGoalModal } = initGoalModal({
+    root,
+    addItemButton: button,
+  });
+  cleanupGoalModal = destroyGoalModal;
+
   renderGrid(); // initial population from storage
 
   cleanupAddItemMenu = initAddItemMenu({
@@ -98,6 +107,7 @@ export function renderApp(root: HTMLElement): HTMLElement {
     menu,
     onItemSelect: (label) => {
       if (label === 'Aspiration') openAspirationModal();
+      else if (label === 'Goal') openGoalModal();
     },
   });
 
