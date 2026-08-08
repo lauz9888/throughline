@@ -24,7 +24,7 @@
     "@cucumber/cucumber": "^13.2.0",
     "@eslint/js": "^10.0.1",
     "@fontsource/playfair-display": "^5.1.1",
-    "@playwright/test": "^1.62.0",
+    "@playwright/test": "^1.62.1",
     "@types/istanbul-lib-coverage": "^2.0.6",
     "@types/jest-axe": "^3.5.9",
     "@types/jsdom": "^28.0.3",
