@@ -42,6 +42,13 @@ The combined statement-coverage percentage across all three test layers (unit + 
 `npm run test:coverage:merge`) must be **at least 90%** before a change passes `qa-reviewer`'s
 Step 12 gate or CI's `coverage-merge` job.
 
+This threshold is a floor, not a complete quality measure — a statement-coverage percentage can be
+satisfied by shallow tests that execute a line without meaningfully asserting on it. Branch
+coverage, critical-path coverage, and documented exceptions for legitimately hard-to-cover code
+remain a manual judgment call for `qa-reviewer` (its "Review testability" step) rather than
+something this version automates; don't read "combined coverage ≥ threshold" as "test quality is
+comprehensively verified."
+
 ## Node version
 
 Development and CI both target **Node 20** (`package.json`'s `engines.node: "20.x"`,
