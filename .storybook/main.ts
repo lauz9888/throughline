@@ -1,5 +1,4 @@
 import type { StorybookConfig } from '@storybook/html-vite';
-import { mergeConfig } from 'vite';
 import type { PluginOption } from 'vite';
 
 const config: StorybookConfig = {
@@ -27,10 +26,7 @@ const config: StorybookConfig = {
         .flatMap((plugin) => (Array.isArray(plugin) ? stripDuplicatedPlugins(plugin) : plugin))
         .filter((plugin) => !shouldStrip(plugin)) as PluginOption[];
 
-    return mergeConfig(
-      { ...viteConfig, plugins: stripDuplicatedPlugins(viteConfig.plugins ?? []) },
-      {},
-    );
+    return { ...viteConfig, plugins: stripDuplicatedPlugins(viteConfig.plugins ?? []) };
   },
 };
 
