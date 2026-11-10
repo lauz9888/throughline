@@ -19,7 +19,7 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
 2. Read `state.md` for the branch, PR number, per-layer test file lists, `coverage-percent` (recorded by the orchestrator at Step 12), `cd-outcome` (recorded by the orchestrator right after Step 19's CD watch resolves — either `deployed` or `merged-deployment-failed`), and `bug-issues` — the exact list of issue numbers this run created.
 3. Fetch each issue in `bug-issues` **by number** — `gh issue view <number> --json number,title,state,labels,createdAt,closedAt,body,url` — not a `gh issue list --search`. A search is unbounded-result-limited by default (a run with more issues than the default page size would silently produce incomplete metrics) and matches on text, which is weaker than a direct lookup by an identifier you already have recorded (indexing lag, an unrelated issue coincidentally containing the same text, a wording change breaking the match). `bug-issues` is the authoritative source; don't fall back to searching if it's empty — an empty list means no bugs were raised this run, not that you should go looking for some.
 
-   For each issue fetched, intersect its labels against the stage taxonomy — exactly one of `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `qa`, `deploy-path`, `manual-test`, `ci`, `cd` — identifying _where in the pipeline it was caught_. `security` and `accessibility` are never the stage label: per the "Bug tracking"/"Accessibility" conventions in `SKILL.md`, every security/accessibility issue is always filed _with_ a stage label alongside it (e.g. `--label security --label qa`), so treat those two as **classification** labels layered on top, may be present on zero, one, or both, and never counted as a stage.
+   For each issue fetched, intersect its labels against the stage taxonomy — exactly one of `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `storybook-test`, `qa`, `deploy-path`, `manual-test`, `ci`, `cd` — identifying _where in the pipeline it was caught_. `security` and `accessibility` are never the stage label: per the "Bug tracking"/"Accessibility" conventions in `SKILL.md`, every security/accessibility issue is always filed _with_ a stage label alongside it (e.g. `--label security --label qa`), so treat those two as **classification** labels layered on top, may be present on zero, one, or both, and never counted as a stage.
 
    **Every issue must resolve to exactly one stage label. Do not guess if it doesn't:**
    - Zero stage labels, or two or more: stop entirely and report `STATUS: blocked` (see "Ending your turn") instead of silently picking one or dropping the issue from the count — a mislabeled issue producing a wrong report is worse than no report. Name every offending issue and its actual labels in the `REASON`, so it's a two-minute `gh issue edit` fix, not a mystery.
@@ -37,6 +37,9 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
      completed_at: <now, ISO 8601>
      total_hours: <decimal hours, e.g. 29.5>
      coverage_percent: <state.md's coverage-percent>
+     storybook_story_count: <count of exported stories across all story files>
+     storybook_interaction_test_count: <count of stories with an interaction/play function>
+     storybook_a11y_pass_rate: <"<passed>/<total> stories" from the test:storybook run>
      outcome: <state.md's cd-outcome — "deployed" or "merged-deployment-failed">
      bugs_by_stage:
        requirement: <count>
@@ -44,6 +47,7 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
        unit-test: <count>
        bdd-test: <count>
        e2e-test: <count>
+       storybook-test: <count>
        qa: <count>
        deploy-path: <count>
        manual-test: <count>
@@ -56,7 +60,7 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
      ````
    - **Requirements** — summary from `requirements.md`
    - **Solution** — summary from `design.md`
-   - **Test changes** — the unit/BDD/e2e file lists from `state.md`, one line each on what they cover, noting which include an automated WCAG scan (`jest-axe`/`@axe-core/playwright`)
+   - **Test changes** — the unit/BDD/e2e file lists from `state.md` (including `storybook-test-files`, when recorded), one line each on what they cover, noting which include an automated WCAG scan (`jest-axe`/`@axe-core/playwright`)
    - **Accessibility** — one line per UI-facing requirement in `requirements.md` on how it's covered (design decision + automated scan), and a short list of any issues carrying the `accessibility` label (from the grouped bug list below) with their resolution
    - **Bugs raised** — grouped by stage/label, each with opened/closed timestamps and resolution summary (from the issue body/close comment)
    - **Coverage** — the combined coverage % from `state.md`

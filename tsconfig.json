@@ -15,7 +15,9 @@
     "vite.config.ts",
     "playwright.config.ts",
     "features/**/*.ts",
-    "tests/e2e/**/*.ts"
+    "tests/e2e/**/*.ts",
+    ".storybook/**/*.ts",
+    "vitest.storybook.config.ts"
   ],
   "ts-node": {
     "compilerOptions": {

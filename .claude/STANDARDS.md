@@ -25,8 +25,8 @@ say so plainly in your final report rather than silently complying or silently i
 
 ## WCAG conformance scope
 
-Automated accessibility scans (`jest-axe` at the unit layer, `@axe-core/playwright` at the e2e
-layer) must be scoped to exactly these tags:
+Automated accessibility scans (`jest-axe` at the unit layer, `@storybook/addon-a11y` at the
+Storybook layer, `@axe-core/playwright` at the e2e layer) must be scoped to exactly these tags:
 
 `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`
 
@@ -38,8 +38,8 @@ As an array literal (the shape both tools' APIs expect):
 
 ## Combined coverage threshold
 
-The combined statement-coverage percentage across all three test layers (unit + BDD + e2e, per
-`npm run test:coverage:merge`) must be **at least 90%** before a change passes `qa-reviewer`'s
+The combined statement-coverage percentage across all enabled test layers (unit + BDD + e2e +
+Storybook, per `npm run test:coverage:merge`) must be **at least 90%** before a change passes `qa-reviewer`'s
 Step 12 gate or CI's `coverage-merge` job.
 
 ## Node version

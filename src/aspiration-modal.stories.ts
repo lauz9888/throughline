@@ -144,8 +144,11 @@ export const FocusIndicator: Story = {
     await openModal(canvasElement);
     const close = within(document.body).getByRole('button', { name: 'Close' });
 
-    // Title is focused on open; Shift+Tab moves to the Close button.
-    await userEvent.tab({ shift: true });
+    // Title is focused on open; the field info icon sits between it and the Close
+    // button in tab order, so Shift+Tab until Close is reached (bounded by the trap).
+    for (let i = 0; i < 6 && document.activeElement !== close; i += 1) {
+      await userEvent.tab({ shift: true });
+    }
     await waitFor(() => expect(document.activeElement).toBe(close));
     // src/style.css gives .modal__close:focus-visible a 2px solid outline.
     const style = getComputedStyle(close);

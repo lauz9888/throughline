@@ -1,6 +1,7 @@
 // Coverage-merge pipeline for Requirement 11 (`npm run test:coverage:merge`).
-// Combines Vitest's native v8 coverage (unit), Cucumber's nyc/ts-node
-// Istanbul instrumentation (BDD), and Playwright's Chromium `page.coverage`
+// Combines Vitest's native v8 coverage (unit), Vitest browser-mode v8 coverage
+// of the Storybook stories (Storybook), Cucumber's nyc/ts-node Istanbul
+// instrumentation (BDD), and Playwright's Chromium `page.coverage`
 // (converted via v8-to-istanbul, see `tests/e2e/coverage-fixture.ts`) into a
 // single combined statement-coverage percentage. See design.md's "Coverage
 // merge design" section for the full rationale, in particular why
@@ -69,6 +70,11 @@ rm(nycOutputDir);
 // vite.config.ts's `test.coverage` block).
 run('npx', ['vitest', 'run', '--coverage']);
 
+// 2b. Storybook stories under Vitest browser mode with coverage (writes
+// coverage/storybook/coverage-final.json per vitest.storybook.config.ts;
+// independent of .nyc_output/).
+run('npx', ['vitest', 'run', '--config', 'vitest.storybook.config.ts', '--coverage']);
+
 // 3. BDD tests under Istanbul instrumentation (nyc's require-hook
 // instruments src/**/*.ts as Cucumber's Node process requires it via
 // ts-node/register). Writes coverage/bdd/coverage-final.json.
@@ -86,9 +92,9 @@ rm(nycOutputDir);
 // .nyc_output/ again).
 run('npx', ['playwright', 'test'], { env: { ...process.env, COVERAGE: 'true' } });
 
-// 6. Merge all three layer-pure coverage-final.json files into one map.
+// 6. Merge all four layer-pure coverage-final.json files into one map.
 const map = createCoverageMap({});
-const layers = ['unit', 'bdd', 'e2e'];
+const layers = ['unit', 'storybook', 'bdd', 'e2e'];
 let mergedAny = false;
 
 for (const layer of layers) {
@@ -96,6 +102,10 @@ for (const layer of layers) {
   if (data) {
     map.merge(data);
     mergedAny = true;
+  } else if (layer === 'storybook') {
+    throw new Error(
+      'Storybook coverage-final.json is missing - the Storybook leg did not produce coverage.',
+    );
   } else {
     console.warn(`Warning: no coverage-final.json found for the "${layer}" layer.`);
   }

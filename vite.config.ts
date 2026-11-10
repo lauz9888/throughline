@@ -42,7 +42,8 @@ export default defineConfig({
       // path separators — produces duplicate, un-mergeable entries for the
       // same file in the combined report.
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts'],
+      // Stories are test-layer artifacts (run by vitest.storybook.config.ts), not application source.
+      exclude: ['src/**/*.test.ts', 'src/**/*.stories.ts'],
     },
   },
 });
