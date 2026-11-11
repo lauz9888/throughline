@@ -1,6 +1,6 @@
 // Pure(ish), unit-tested helpers for scripts/merge-coverage.mjs: builds the canonical coverage
 // inventory, credits every layer onto it, and runs the validity checks and investigation signals
-// defined in .claude/STANDARDS.md's "Coverage measurement" section. See
+// defined in Waypoint's STANDARDS.md "Coverage measurement" section. See
 // docs/adr/0007-canonical-coverage-inventory-and-istanbul-e2e.md.
 //
 // Layer data is Istanbul `coverage-final.json`-shaped (`{ [path]: FileCoverageData }`). Items are

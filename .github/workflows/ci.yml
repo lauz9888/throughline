@@ -129,10 +129,10 @@ jobs:
       # build-health gate only; its output is not shared with other jobs.
 
   coverage-merge:
-    name: Combined coverage (statements >=90%, branches >=90%, see .claude/STANDARDS.md)
+    name: Combined coverage (statements >=90%, branches >=90%, see .waypoint/config.json)
     runs-on: ubuntu-latest
     env:
-      # Mirror the thresholds documented in .claude/STANDARDS.md — update
+      # Mirror the thresholds in .waypoint/config.json's `coverage` — update
       # both places together if either ever changes.
       COVERAGE_THRESHOLD: 90
       BRANCH_COVERAGE_THRESHOLD: 90

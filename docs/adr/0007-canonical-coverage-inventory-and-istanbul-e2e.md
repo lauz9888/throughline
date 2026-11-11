@@ -5,7 +5,7 @@ Date: 2026-11-11
 
 ## Context
 
-Waypoint's updated standards (`.claude/STANDARDS.md`, "Coverage measurement") require the
+Waypoint's updated standards (then `.claude/STANDARDS.md`, now the plugin's `STANDARDS.md`, "Coverage measurement") require the
 combined coverage figure to be provably valid — one canonical inventory of statements and
 branches, verified against the source on disk and reconciled against every layer — and gate
 branches alongside statements. Measured against those rules, `npm run test:coverage:merge` was
@@ -49,7 +49,7 @@ invalid in three ways:
 - **Calibration point:** the `generateId()` fallback in `src/goal-storage.ts`, taken only when
   `crypto.randomUUID` is missing — which no test environment lacks — marked
   `coverage-calibration: unreachable`.
-- **Gate statements and branches at 90% each**, in `ci.yml` and `.claude/STANDARDS.md`.
+- **Gate statements and branches at 90% each**, in `ci.yml` and the pipeline standards (now `.waypoint/config.json`'s `coverage`).
 - **One exclusion list** — `src/**/*.ts` minus tests, stories and `.d.ts` — now shared by
   `vite.config.ts`, `vitest.storybook.config.ts`, `.nycrc.json`, the e2e instrumentation and
   the merge script. `src/main.ts` is in scope.
@@ -67,7 +67,7 @@ invalid in three ways:
 ## Consequences
 
 - Figures changed because measurement changed, not tests: statements 97.33% (raw union) →
-  98.77% (965/977), branches newly reported at 91.84% (259/282). `.claude/STANDARDS.md`'s
+  98.77% (965/977), branches newly reported at 91.84% (259/282). Waypoint's `STANDARDS.md`
   coverage method version is `v2`; reports from before this change are `v1`.
 - A new BDD-only artefact (e.g. from a different TypeScript emit) fails the run until it's
   classified with evidence — intended, but it can surprise whoever changes the BDD toolchain.

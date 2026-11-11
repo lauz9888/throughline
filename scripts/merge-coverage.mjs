@@ -3,7 +3,7 @@
 // nyc/ts-node Istanbul around Cucumber (BDD), and an Istanbul-instrumented COVERAGE=true build
 // under Playwright (e2e, see `tests/e2e/coverage-fixture.ts`) — then combines them onto one
 // canonical inventory and prints combined statement and branch coverage per the output contract
-// in .claude/STANDARDS.md's "Coverage measurement" section. Exits non-zero on any validity
+// in Waypoint's STANDARDS.md "Coverage measurement" section. Exits non-zero on any validity
 // failure; investigation signals are printed but never fail the run. See
 // docs/adr/0007-canonical-coverage-inventory-and-istanbul-e2e.md.
 //
@@ -132,7 +132,7 @@ for (const line of formatReport({ layers, diskFiles, result, signals })) console
 if (invalid.length) {
   for (const msg of invalid) console.error(`Coverage invalid: ${msg}`);
   console.error(
-    `${invalid.length} validity check failure(s) — the figures above are not valid (see .claude/STANDARDS.md).`,
+    `${invalid.length} validity check failure(s) — the figures above are not valid (see Waypoint's STANDARDS.md, "Validity checks").`,
   );
   process.exit(1);
 }
