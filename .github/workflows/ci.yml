@@ -1,7 +1,7 @@
 name: CI
 
 # Pipeline step 15: install deps + build, typecheck, lint, format check, unit tests,
-# BDD tests, dependency audit, e2e tests, combined coverage gate.
+# BDD tests, dependency audit, e2e tests, Storybook tests, combined coverage gate.
 # Runs on every push/PR so the ship-feature workflow can watch it via `gh pr checks --watch`.
 
 on:
@@ -112,6 +112,22 @@ jobs:
       # deployment. `pretest:e2e` (package.json) installs the Chromium
       # browser automatically before this runs.
 
+  storybook-tests:
+    name: Storybook tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build-storybook
+      - run: npm run test:storybook
+      # `pretest:storybook` (package.json) installs the Chromium browser
+      # automatically before `test:storybook` runs. `build-storybook` is a
+      # build-health gate only; its output is not shared with other jobs.
+
   coverage-merge:
     name: Combined coverage (>=90%, see .claude/STANDARDS.md)
     runs-on: ubuntu-latest
@@ -128,7 +144,9 @@ jobs:
       - run: npm ci
       # scripts/merge-coverage.mjs invokes `npx playwright test` directly
       # (not via `npm run test:e2e`), which bypasses the `pretest:e2e` npm
-      # lifecycle hook — the browser must be installed explicitly here.
+      # lifecycle hook — the browser must be installed explicitly here. The
+      # same install also serves the Storybook leg (the script calls
+      # `npx vitest` directly, bypassing `pretest:storybook`).
       - run: npx playwright install --with-deps chromium
       - name: Run combined coverage and enforce threshold
         run: |

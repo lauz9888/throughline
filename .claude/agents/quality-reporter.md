@@ -54,6 +54,7 @@ deployed run, each starting with a fenced ` ```metrics ` block written by `repor
      - `unit-test`
      - `bdd-test`
      - `e2e-test`
+     - `storybook-test`
      - `qa`
      - `deploy-path`
      - `manual-test`

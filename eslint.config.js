@@ -13,6 +13,7 @@ module.exports = tseslint.config(
       'playwright-report',
       'test-results',
       'node_modules',
+      'storybook-static',
     ],
   },
   js.configs.recommended,
@@ -31,6 +32,9 @@ module.exports = tseslint.config(
       'playwright.config.ts',
       'cucumber.cjs',
       'eslint.config.js',
+      '.storybook/**/*.ts',
+      'vitest.storybook.config.ts',
+      'vitest.config.ts',
     ],
     languageOptions: {
       globals: globals.node,
