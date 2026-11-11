@@ -148,7 +148,7 @@ jobs:
       # lifecycle hook — the browser must be installed explicitly here. The
       # same install also serves the Storybook leg (the script calls
       # `npx vitest` directly, bypassing `pretest:storybook`).
-      - run: npx playwright install --with-deps chromium
+      - run: npm run browsers:install
       - name: Run combined coverage and enforce thresholds
         # test:coverage:merge exits non-zero on any validity failure (pipefail
         # carries that through tee); investigation signals are printed as
