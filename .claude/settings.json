@@ -4,7 +4,8 @@
       "source": {
         "source": "github",
         "repo": "lauz9888/waypoint"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
