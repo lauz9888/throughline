@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   saveAspiration,
   updateAspiration,
@@ -290,5 +290,65 @@ describe('sortAspirationsAlphabetically', () => {
     sortAspirationsAlphabetically(input);
 
     expect(input).toEqual(inputCopy);
+  });
+});
+
+describe('coverage-standards additions (#133)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each(['{"a":1}', '"text"'])(
+    '[#133:REQ-003,REQ-006] readAspirations returns [] for valid non-array JSON %s',
+    (raw) => {
+      const storage = createFakeStorage();
+      storage.setItem(ASPIRATIONS_STORAGE_KEY, raw);
+
+      expect(readAspirations(storage)).toEqual([]);
+    },
+  );
+
+  it('[#133:REQ-003,REQ-006] sortAspirationsAlphabetically orders same-title records by createdAt, and keeps equal keys in input order', () => {
+    const rec = (id: string, title: string, createdAt: string): Aspiration => ({
+      id,
+      title,
+      description: '',
+      reason: '',
+      createdAt,
+    });
+
+    // Later record supplied first, differing only in title case: the later sorts after.
+    const descending = sortAspirationsAlphabetically([
+      rec('later', 'Same Title', '2024-06-01T00:00:00.000Z'),
+      rec('earlier', 'same title', '2024-01-01T00:00:00.000Z'),
+    ]);
+    expect(descending.map((a) => a.id)).toEqual(['earlier', 'later']);
+
+    const ascending = sortAspirationsAlphabetically([
+      rec('earlier', 'same title', '2024-01-01T00:00:00.000Z'),
+      rec('later', 'Same Title', '2024-06-01T00:00:00.000Z'),
+    ]);
+    expect(ascending.map((a) => a.id)).toEqual(['earlier', 'later']);
+
+    // Identical title and createdAt: comparator returns 0, relative order preserved.
+    const equal = sortAspirationsAlphabetically([
+      rec('first', 'Same', '2024-01-01T00:00:00.000Z'),
+      rec('second', 'Same', '2024-01-01T00:00:00.000Z'),
+    ]);
+    expect(equal.map((a) => a.id)).toEqual(['first', 'second']);
+  });
+
+  it('[#133:REQ-004,REQ-006] saveAspiration falls back to a non-UUID id when crypto.randomUUID is unavailable', () => {
+    vi.stubGlobal('crypto', {});
+    const storage = createFakeStorage();
+
+    const record = saveAspiration({ title: 'T', description: '', reason: '' }, storage);
+
+    expect(typeof record.id).toBe('string');
+    expect(record.id.length).toBeGreaterThan(0);
+    expect(record.id).not.toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    expect((readStored(storage)[0] as Aspiration).id).toBe(record.id);
   });
 });

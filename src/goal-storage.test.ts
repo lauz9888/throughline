@@ -394,3 +394,47 @@ describe('sortGoalsAlphabetically', () => {
     expect(input).toEqual(inputCopy);
   });
 });
+
+describe('coverage-standards additions (#133)', () => {
+  // Deliberately no crypto stubbing here: nothing in this file may reach generateId's fallback
+  // in goal-storage.ts (the coverage calibration statement, REQ-005).
+  it.each(['{"a":1}', '"text"'])(
+    '[#133:REQ-003,REQ-006] readGoals returns [] for valid non-array JSON %s',
+    (raw) => {
+      window.localStorage.clear();
+      window.localStorage.setItem(GOALS_STORAGE_KEY, raw);
+
+      expect(readGoals(window.localStorage)).toEqual([]);
+      window.localStorage.clear();
+    },
+  );
+
+  it('[#133:REQ-003,REQ-006] sortGoalsAlphabetically orders same-title records by createdAt, and keeps equal keys in input order', () => {
+    const rec = (id: string, title: string, createdAt: string): Goal => ({
+      id,
+      title,
+      description: '',
+      reason: '',
+      milestones: [],
+      createdAt,
+    });
+
+    const descending = sortGoalsAlphabetically([
+      rec('later', 'Same Title', '2024-06-01T00:00:00.000Z'),
+      rec('earlier', 'same title', '2024-01-01T00:00:00.000Z'),
+    ]);
+    expect(descending.map((g) => g.id)).toEqual(['earlier', 'later']);
+
+    const ascending = sortGoalsAlphabetically([
+      rec('earlier', 'same title', '2024-01-01T00:00:00.000Z'),
+      rec('later', 'Same Title', '2024-06-01T00:00:00.000Z'),
+    ]);
+    expect(ascending.map((g) => g.id)).toEqual(['earlier', 'later']);
+
+    const equal = sortGoalsAlphabetically([
+      rec('first', 'Same', '2024-01-01T00:00:00.000Z'),
+      rec('second', 'Same', '2024-01-01T00:00:00.000Z'),
+    ]);
+    expect(equal.map((g) => g.id)).toEqual(['first', 'second']);
+  });
+});

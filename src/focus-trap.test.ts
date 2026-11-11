@@ -116,3 +116,61 @@ describe('createFocusTrap', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 });
+
+describe('createFocusTrap coverage-standards additions (#133)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('[#133:REQ-003,REQ-004,REQ-006] Tab and Shift+Tab on a container with no focusable elements do nothing', () => {
+    const container = document.createElement('div');
+    container.textContent = 'nothing focusable here';
+    const outside = document.createElement('button');
+    document.body.append(container, outside);
+    outside.focus();
+    createFocusTrap(container);
+
+    for (const shiftKey of [false, true]) {
+      const event = new KeyboardEvent('keydown', {
+        key: 'Tab',
+        shiftKey,
+        bubbles: true,
+        cancelable: true,
+      });
+      expect(() => container.dispatchEvent(event)).not.toThrow();
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(outside);
+    }
+  });
+
+  it('[#133:REQ-003,REQ-006] with an unchecked radio group the first radio is the tab stop that the trap wraps to and from', () => {
+    const container = document.createElement('div');
+    const radioA = document.createElement('input');
+    radioA.type = 'radio';
+    radioA.name = 'choice';
+    const radioB = document.createElement('input');
+    radioB.type = 'radio';
+    radioB.name = 'choice';
+    const button = document.createElement('button');
+    button.type = 'button';
+    container.append(radioA, radioB, button);
+    document.body.append(container);
+    createFocusTrap(container);
+
+    radioA.focus();
+    const back = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(back);
+    expect(back.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(button);
+
+    const forward = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    container.dispatchEvent(forward);
+    expect(forward.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(radioA);
+  });
+});

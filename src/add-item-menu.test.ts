@@ -434,3 +434,45 @@ describe('initAddItemMenu', () => {
     expect(fixture.menu.hidden).toBe(true);
   });
 });
+
+describe('initAddItemMenu coverage-standards additions (#133)', () => {
+  let fixture: ReturnType<typeof buildFixture>;
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    fixture = buildFixture();
+  });
+
+  it.each(['Enter', ' '])(
+    '[#133:REQ-003,REQ-004] key %j on the focused trigger while the menu is open returns early (not prevented, focus unchanged, still open)',
+    (key) => {
+      initAddItemMenu({ button: fixture.button, menu: fixture.menu });
+      fixture.button.click();
+      fixture.button.focus();
+      expect(fixture.menu.hidden).toBe(false);
+
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      fixture.button.dispatchEvent(event);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(document.activeElement).toBe(fixture.button);
+      expect(fixture.menu.hidden).toBe(false);
+      expect(fixture.button.getAttribute('aria-expanded')).toBe('true');
+    },
+  );
+
+  it('[#133:REQ-003] a menu item whose textContent is null selects with an empty label and still closes the menu', () => {
+    const onItemSelect = vi.fn();
+    initAddItemMenu({ button: fixture.button, menu: fixture.menu, onItemSelect });
+    fixture.button.click();
+    const item = fixture.items[0]!;
+    Object.defineProperty(item, 'textContent', { get: () => null });
+
+    expect(() => item.click()).not.toThrow();
+
+    expect(onItemSelect).toHaveBeenCalledTimes(1);
+    expect(onItemSelect).toHaveBeenCalledWith('');
+    expect(fixture.menu.hidden).toBe(true);
+    expect(fixture.button.getAttribute('aria-expanded')).toBe('false');
+  });
+});
