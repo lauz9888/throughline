@@ -34,6 +34,7 @@ module.exports = tseslint.config(
       'eslint.config.js',
       '.storybook/**/*.ts',
       'vitest.storybook.config.ts',
+      'vitest.config.ts',
     ],
     languageOptions: {
       globals: globals.node,

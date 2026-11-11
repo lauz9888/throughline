@@ -66,3 +66,22 @@ after its `play` function, color-contrast included.
 - `playwright` and `@playwright/test` share one version range and must be bumped together; a
   Dependabot bump of only one would install two Chromium revisions.
 - Revisit this ADR before adding visual regression testing.
+
+## Addendum: vitest configuration for Storybook's in-UI "Run tests" (bug #123)
+
+`vitest.storybook.config.ts` is the Storybook project and is what every script passes with
+`--config`. A root `vitest.config.ts` re-exports `vite.config.ts` for normal runs and, only when
+`VITEST_STORYBOOK === 'true'`, exposes just that project through `test.projects`. The addon sets
+that variable in the forked child process that Storybook's UI test provider starts, and its Vite
+plugin uses the same flag to name the project `storybook:<configDir>`. This is needed because the
+addon locates its project through Vitest's default config for the root and filters for
+`storybook:<configDir>`; without it Vitest throws "No projects matched the filter" and the dev
+server exits.
+
+Consequences:
+
+- Do not add a `vitest.workspace` file (Vitest 4 ignores it; only `test.projects` is honoured).
+- If the unit settings in `vite.config.ts` change, `vitest.config.ts` follows automatically.
+- The comment in `vitest.config.ts` deliberately contains `@storybook/addon-vitest` so the addon's
+  config-file scan selects the project root.
+- A future Storybook upgrade should re-check the addon's config lookup.

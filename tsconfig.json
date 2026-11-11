@@ -17,7 +17,8 @@
     "features/**/*.ts",
     "tests/e2e/**/*.ts",
     ".storybook/**/*.ts",
-    "vitest.storybook.config.ts"
+    "vitest.storybook.config.ts",
+    "vitest.config.ts"
   ],
   "ts-node": {
     "compilerOptions": {
