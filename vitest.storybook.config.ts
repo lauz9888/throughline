@@ -17,7 +17,7 @@ export default defineConfig({
       reporter: ['json', 'text-summary'],
       reportsDirectory: 'coverage/storybook',
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.stories.ts', 'src/main.ts'],
+      exclude: ['src/**/*.test.ts', 'src/**/*.stories.ts'],
     },
   },
 });

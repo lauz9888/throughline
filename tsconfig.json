@@ -16,6 +16,7 @@
     "playwright.config.ts",
     "features/**/*.ts",
     "tests/e2e/**/*.ts",
+    "tests/unit/**/*.ts",
     ".storybook/**/*.ts",
     "vitest.storybook.config.ts",
     "vitest.config.ts"

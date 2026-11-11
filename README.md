@@ -29,7 +29,7 @@ Tests:
 npm run test:unit             # Vitest
 npm run test:bdd              # Cucumber.js
 npm run test:e2e              # Playwright (reads BASE_URL to run against a live deployment)
-npm run test:coverage:merge   # combined coverage across all three suites
+npm run test:coverage:merge   # combined statement + branch coverage across all four layers
 ```
 
 ### Accessibility
@@ -53,7 +53,7 @@ Every change — feature, fix, or refactor — runs through the `/ship-feature` 
 8. **(Step 12)** A QA pass reviews code quality, accessibility, and checks combined test coverage is at least 90%.
 9. **(Step 13)** You manually test the change on a local URL; any bug you report is logged and fixed.
 10. **(Step 14)** The branch merges to `main` via PR.
-11. **(Steps 15–16)** CI (build, typecheck, lint, format check, unit, BDD, dependency audit, e2e, combined coverage ≥90%) and CD (production build, GitHub Pages deploy, smoke check, PWA validation, live e2e) run automatically.
+11. **(Steps 15–16)** CI (build, typecheck, lint, format check, unit, BDD, dependency audit, e2e, combined statement and branch coverage ≥90%) and CD (production build, GitHub Pages deploy, smoke check, PWA validation, live e2e) run automatically.
 12. **(Step 17)** Any CI failure is logged and fixed automatically before re-running.
 13. **(Step 18)** Any CD failure is logged (not auto-fixed) for follow-up.
 14. **(Step 19)** Documentation (this README and the wiki) is reconciled against what shipped.
@@ -79,6 +79,6 @@ CI/CD and the pipeline's test-running steps expect these `package.json` scripts 
 | `test:unit`           | Vitest unit suite                                                                       |
 | `test:bdd`            | Cucumber.js BDD suite                                                                   |
 | `test:e2e`            | Playwright e2e suite (reads `BASE_URL` when set, for running against a live deployment) |
-| `test:coverage:merge` | Combined coverage percentage across all three test layers                               |
+| `test:coverage:merge` | Combined statement and branch coverage across all four test layers, validity-checked    |
 
 If any of these don't exist yet, the pipeline's solution design/implementation steps add them as part of the change rather than skipping the corresponding check.

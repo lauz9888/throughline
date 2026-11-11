@@ -21,13 +21,16 @@ deployed run, each starting with a fenced ` ```metrics ` block written by `repor
 
 1. `Glob` for `reports/*.md` — not `reports/metrics/**`, that's this agent's own output directory,
    exclude it from the input set. For each file, extract its fenced ` ```metrics ` block:
-   `tracking_issue`, `started_at`, `completed_at`, `total_hours`, `coverage_percent`, `outcome`,
+   `tracking_issue`, `started_at`, `completed_at`, `total_hours`, `coverage_percent`,
+   `branch_coverage_percent`, `coverage_method`, `outcome`,
    `bugs_by_stage`, `bugs_by_category`. If a report predates this metrics block (written before
    this feature existed), exclude it from the numeric rollup but count it, and note in both
    reports' intros how many pre-metrics releases exist and aren't reflected in the numbers, so the
    totals aren't silently short without explanation. If a report has a metrics block but predates
-   `outcome`/`bugs_by_category` specifically (an earlier version of this block), treat a missing
-   `outcome` as `deployed` and a missing `bugs_by_category` as all-zero — don't drop the whole
+   `outcome`/`bugs_by_category`/`branch_coverage_percent`/`coverage_method` specifically (an
+   earlier version of this block), treat a missing `outcome` as `deployed`, a missing
+   `bugs_by_category` as all-zero, a missing `coverage_method` as `v1`, and a missing
+   `branch_coverage_percent` as not measured (exclude it from branch means, don't count it as 0) — don't drop the whole
    report over a field that didn't exist yet.
 2. Sort the remaining releases by `completed_at` ascending. This list _is_ the release log — one
    entry per completed pipeline run, but **not every entry reached live users**: `outcome` is
@@ -80,9 +83,13 @@ deployed run, each starting with a fenced ` ```metrics ` block written by `repor
      the same issue twice.
    - **Average requirement delivery time** — mean of `total_hours` across `deployed` releases only
      that week (a change that never went live hasn't finished being "delivered").
-   - **Coverage trend** — mean of `coverage_percent` across all of that week's releases (coverage
-     is a property of the code change itself, measured pre-merge at Step 12, independent of
-     whether the subsequent deploy succeeded).
+   - **Coverage trend** — mean of `coverage_percent` and of `branch_coverage_percent` across all
+     of that week's releases (coverage is a property of the code change itself, measured
+     pre-merge at Step 12, independent of whether the subsequent deploy succeeded). Never average
+     across different `coverage_method` values: a method change is a measurement correction, not
+     a test-quality change, so if a week spans two methods report each method's mean separately,
+     and mark the first bucket on a new method as a series break rather than describing the
+     jump as an improvement or regression.
    - **Bug-fix churn** — mean bugs raised per release that week, using the same `sum(bugs_by_stage)
 / total_releases` formula as defect density; surfaced as its own row so a churn spike is
      visible even in a week where release count also moved.
