@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "waypoint": {
+      "source": {
+        "source": "github",
+        "repo": "lauz9888/waypoint"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "waypoint@waypoint": true
+  }
+}
