@@ -23,12 +23,20 @@ npm run build
 npm run preview
 ```
 
+Storybook (isolated component stories for the modals, grids, confirm dialog, and add-item menu; `*.stories.ts` live beside the components in `src/`):
+
+```
+npm run storybook             # dev server on http://localhost:6006
+npm run build-storybook       # static build to storybook-static/ (gitignored)
+```
+
 Tests:
 
 ```
 npm run test:unit             # Vitest
 npm run test:bdd              # Cucumber.js
 npm run test:e2e              # Playwright (reads BASE_URL to run against a live deployment)
+npm run test:storybook        # Storybook component stories in real Chromium (Vitest + addon-vitest)
 npm run test:coverage:merge   # combined statement + branch coverage across all four layers
 ```
 
@@ -37,6 +45,7 @@ npm run test:coverage:merge   # combined statement + branch coverage across all 
 Automated WCAG 2.1 A/AA scans run alongside the functional tests, scoped via each tool's tag filter so only real success criteria are checked (not axe-core's broader best-practice rules):
 
 - **Unit (`test:unit`)**: `jest-axe`, wired up in `vitest.setup.ts`. See `src/app.test.ts` for the pattern — color-contrast is disabled at this layer since jsdom has no real rendering engine to evaluate it against. `src/aspiration-modal.test.ts` extends this to several dialog states (freshly opened, the unsaved-changes confirmation open on top of the modal); `src/aspiration-grid.test.ts` and `src/edit-aspiration-modal.test.ts` do the same for the tile grid (populated and empty-state) and the Edit Aspiration modal (open, unsaved-changes confirm, delete confirm). `src/goal-modal.test.ts` does the same for the Create Goal modal, including states specific to its dynamic Milestones section (rows added, a tooltip open alongside them) that have no Aspiration-modal equivalent; `src/goal-grid.test.ts` and `src/edit-goal-modal.test.ts` mirror the Aspiration grid/Edit-modal scans for the goal tile grid and the Edit Goal modal (open, unsaved-changes confirm, delete confirm, with pre-populated milestone rows present).
+- **Storybook (`test:storybook`)**: `@storybook/addon-a11y` runs axe against every story in real Chromium via `@storybook/addon-vitest`, so color-contrast is checked here too, per component state. See the `src/*.stories.ts` files and `.storybook/`. Each story's stored data is isolated through an in-memory storage shim (`.storybook/memory-storage.ts`). Decision record: `docs/adr/0006-storybook-addon-vitest-as-fourth-test-layer.md`.
 - **E2e (`test:e2e`)**: `@axe-core/playwright`, covering color-contrast and any other checks that need a real browser. See `tests/e2e/home.spec.ts`, `tests/e2e/add-item-button.spec.ts`, `tests/e2e/aspiration-modal.spec.ts`, `tests/e2e/aspiration-tiles.spec.ts`, `tests/e2e/goal-modal.spec.ts`, and `tests/e2e/goal-tiles.spec.ts` — these also cover real-browser-only behavior jsdom can't verify, like background focus containment via `inert`, native radio-group keyboard navigation, a long-titled tile staying square, and (for the Goal modal/tiles) keyboard focus moving deterministically as milestone rows are added/removed/pre-populated and the green color scheme's computed contrast.
 
 ## Workflow
@@ -53,7 +62,7 @@ Every change — feature, fix, or refactor — runs through the `/ship-feature` 
 8. **(Step 12)** A QA pass reviews code quality, accessibility, and checks combined test coverage is at least 90%.
 9. **(Step 13)** You manually test the change on a local URL; any bug you report is logged and fixed.
 10. **(Step 14)** The branch merges to `main` via PR.
-11. **(Steps 15–16)** CI (build, typecheck, lint, format check, unit, BDD, dependency audit, e2e, combined statement and branch coverage ≥90%) and CD (production build, GitHub Pages deploy, smoke check, PWA validation, live e2e) run automatically.
+11. **(Steps 15–16)** CI (build, typecheck, lint, format check, unit, BDD, dependency audit, e2e, Storybook tests, combined statement and branch coverage ≥90%) and CD (production build, GitHub Pages deploy, smoke check, PWA validation, live e2e) run automatically.
 12. **(Step 17)** Any CI failure is logged and fixed automatically before re-running.
 13. **(Step 18)** Any CD failure is logged (not auto-fixed) for follow-up.
 14. **(Step 19)** Documentation (this README and the wiki) is reconciled against what shipped.
@@ -79,6 +88,7 @@ CI/CD and the pipeline's test-running steps expect these `package.json` scripts 
 | `test:unit`           | Vitest unit suite                                                                       |
 | `test:bdd`            | Cucumber.js BDD suite                                                                   |
 | `test:e2e`            | Playwright e2e suite (reads `BASE_URL` when set, for running against a live deployment) |
+| `test:storybook`      | Storybook story tests (Vitest browser mode, includes a11y checks)                       |
 | `test:coverage:merge` | Combined statement and branch coverage across all four test layers, validity-checked    |
 
 If any of these don't exist yet, the pipeline's solution design/implementation steps add them as part of the change rather than skipping the corresponding check.
