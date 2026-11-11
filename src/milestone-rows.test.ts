@@ -416,3 +416,56 @@ describe('buildMilestoneRows — initialMilestones / onRowsChanged (edit-goal-mo
     expect(() => rowRemoveButtons(result)[0]!.click()).not.toThrow();
   });
 });
+
+describe('buildMilestoneRows coverage-standards additions (#133)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('[#133:REQ-003] removing a row whose data-milestone-key is missing still removes it and announces an empty key', () => {
+    const result = setup();
+    result.addButton.click();
+    result.addButton.click();
+    const row =
+      result.section.querySelector<HTMLElement>('.modal__milestone-input')!.parentElement!;
+    row.removeAttribute('data-milestone-key');
+
+    expect(() => rowRemoveButtons(result)[0]!.click()).not.toThrow();
+
+    expect(result.rowCount()).toBe(1);
+    expect(liveRegion(result).textContent).toBe('Milestone  removed.');
+  });
+
+  it('[#133:REQ-003] getMilestonesForSave() omits a row whose title input was removed from the DOM', () => {
+    const result = setup();
+    result.addButton.click();
+    result.addButton.click();
+    const [firstInput, secondInput] = rowInputs(result);
+    setValue(firstInput!, 'Kept');
+    setValue(secondInput!, 'Dropped');
+    secondInput!.remove();
+
+    let saved: ReturnType<MilestoneRowsResult['getMilestonesForSave']> = [];
+    expect(() => {
+      saved = result.getMilestonesForSave();
+    }).not.toThrow();
+
+    expect(saved.map((m) => m.title)).toEqual(['Kept']);
+  });
+
+  it('[#133:REQ-004,REQ-003] clicking the same remove button twice removes the row once and leaves the remaining rows unchanged', () => {
+    const result = setup();
+    result.addButton.click();
+    result.addButton.click();
+    const [firstInput, secondInput] = rowInputs(result);
+    setValue(firstInput!, 'One');
+    setValue(secondInput!, 'Two');
+    const firstRemove = rowRemoveButtons(result)[0]!;
+
+    firstRemove.click();
+    expect(() => firstRemove.click()).not.toThrow();
+
+    expect(result.rowCount()).toBe(1);
+    expect(result.getNonBlankTitles()).toEqual(['Two']);
+  });
+});

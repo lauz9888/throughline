@@ -585,3 +585,83 @@ describe('initEditAspirationModal', () => {
     expect(results).toHaveNoViolations();
   });
 });
+
+describe('initEditAspirationModal coverage-standards additions (#133)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    currentModal?.destroy();
+    currentModal = undefined;
+    document.body.innerHTML = '';
+    document.body.inert = false;
+    window.localStorage.clear();
+  });
+
+  it('[#133:REQ-003,REQ-004] a click on the overlay itself with an untouched form closes the modal and restores trigger focus; a click inside the dialog does not close it', () => {
+    const aspiration = makeAspiration();
+    seedStorage(aspiration);
+    const { gridContainer, modal } = setup();
+    const tile = openWithTile(modal, gridContainer, aspiration);
+
+    const dialog = getDialog();
+    dialog.click(); // target is the dialog, not the overlay
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+
+    const overlay = document.querySelector<HTMLElement>('.modal-overlay')!;
+    overlay.click(); // target === overlay
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(getAlertDialog()).toBeNull();
+    expect(document.activeElement).toBe(tile);
+  });
+
+  it('[#133:REQ-003] on Save, a non-Tab key and Shift+Tab are not redirected to Delete', () => {
+    const aspiration = makeAspiration();
+    seedStorage(aspiration);
+    const { gridContainer, modal } = setup();
+    openWithTile(modal, gridContainer, aspiration);
+
+    const dialog = getDialog();
+    setValue(dialog.querySelector<HTMLInputElement>('input[id$="field-title"]')!, 'Changed title'); // enables Save
+    const saveButton = dialog.querySelector<HTMLButtonElement>('.modal__save')!;
+    const deleteButton = dialog.querySelector<HTMLButtonElement>('.modal__delete')!;
+
+    saveButton.focus();
+    const letter = new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true });
+    saveButton.dispatchEvent(letter);
+    expect(letter.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(saveButton);
+
+    const shiftTab = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    saveButton.dispatchEvent(shiftTab);
+    expect(shiftTab.defaultPrevented).toBe(false);
+    expect(document.activeElement).not.toBe(deleteButton);
+    expect(document.activeElement).toBe(saveButton);
+  });
+
+  it('[#133:REQ-004,REQ-003] calling open() a second time while open is a no-op', () => {
+    const first = makeAspiration();
+    const second = makeAspiration({ id: 'aspiration-2', title: 'Second title' });
+    window.localStorage.setItem('throughline:aspirations', JSON.stringify([first, second]));
+    const { root, gridContainer, modal } = setup();
+    openWithTile(modal, gridContainer, first);
+    const secondTile = makeTriggerTile(second);
+    gridContainer.append(secondTile);
+
+    modal.open(second, secondTile);
+
+    expect(document.querySelectorAll('.modal-overlay')).toHaveLength(1);
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    const titleInput = getDialog().querySelector<HTMLInputElement>('input[id$="field-title"]')!;
+    expect(titleInput.value).toBe('Original title');
+    expect(root.inert).toBe(true);
+  });
+});

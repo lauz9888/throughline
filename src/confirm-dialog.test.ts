@@ -184,3 +184,48 @@ describe('openConfirmDialog', () => {
     expect(dialog.className).toBe('modal modal--confirm');
   });
 });
+
+describe('openConfirmDialog closed latch (#133)', () => {
+  let parentDialog: HTMLElement;
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    parentDialog = document.createElement('div');
+    parentDialog.className = 'modal';
+    document.body.append(parentDialog);
+  });
+
+  it('[#133:REQ-003,REQ-004] calling the handle cancel() twice invokes onCancel once and leaves the parent not inert', () => {
+    const onCancel = vi.fn();
+    const onConfirm = vi.fn();
+    const handle = openConfirmDialog(document, parentDialog, buildOptions(), {
+      onCancel,
+      onConfirm,
+    });
+
+    handle.cancel();
+    handle.cancel();
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(parentDialog.inert).toBe(false);
+    expect(getAlertDialog()).toBeNull();
+  });
+
+  it('[#133:REQ-003,REQ-004] a click on the detached confirm button after cancel does not call onConfirm', () => {
+    const onCancel = vi.fn();
+    const onConfirm = vi.fn();
+    const handle = openConfirmDialog(document, parentDialog, buildOptions(), {
+      onCancel,
+      onConfirm,
+    });
+    const confirmButton = getAlertDialog()!.querySelector<HTMLButtonElement>('.modal__discard')!;
+
+    handle.cancel();
+    confirmButton.click();
+
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(parentDialog.inert).toBe(false);
+  });
+});
