@@ -32,7 +32,7 @@ Version rationale: Storybook 9.1.x (what the reference project uses) was rejecte
 Add Storybook as a fourth test layer using `@storybook/html-vite` and `@storybook/addon-vitest`,
 which turns each story into a Vitest test in browser mode with headless Chromium via
 `@vitest/browser-playwright`. `@storybook/addon-a11y` is configured once in `.storybook/preview.ts`
-with `test: 'error'` and the WCAG tag set from `.claude/STANDARDS.md`, so every story is scanned
+with `test: 'error'` and the WCAG tag set from the pipeline standards (now `.waypoint/config.json`'s `wcagTags`), so every story is scanned
 after its `play` function, color-contrast included.
 
 - `storybook`, `@storybook/html-vite`, `@storybook/addon-vitest` and `@storybook/addon-a11y` are

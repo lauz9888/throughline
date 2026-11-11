@@ -1,6 +1,6 @@
 // @vitest-environment node
 // Unit tests for scripts/lib/coverage-merge.mjs — the pure logic behind
-// `npm run test:coverage:merge` (.claude/STANDARDS.md, "Calibration requirements" 2–5).
+// `npm run test:coverage:merge` (Waypoint's STANDARDS.md, "Calibration requirements" 2–5).
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';

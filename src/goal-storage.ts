@@ -95,7 +95,7 @@ function generateId(): string {
   }
   // coverage-calibration: unreachable — every test environment (jsdom, Chromium, Node) has
   // crypto.randomUUID, so no layer can reach this fallback. `test:coverage:merge` fails if any
-  // layer reports it hit (.claude/STANDARDS.md, "Calibration requirements"); if a test ever
+  // layer reports it hit (Waypoint's STANDARDS.md, "Calibration requirements"); if a test ever
   // exercises it deliberately, move this marker to another unreachable statement.
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }

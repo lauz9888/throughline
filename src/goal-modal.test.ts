@@ -3,7 +3,7 @@ import { axe } from 'jest-axe';
 import { initGoalModal } from './goal-modal';
 
 // Scope to actual WCAG 2.1 A/AA success criteria, matching src/app.test.ts's convention (see
-// .claude/STANDARDS.md's "WCAG conformance scope").
+// .waypoint/config.json's `wcagTags`).
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 const GOAL_BLURB_TEXT =
