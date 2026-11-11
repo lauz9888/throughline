@@ -8,6 +8,10 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+  // The Istanbul-instrumented COVERAGE=true build is markedly slower than the
+  // production bundle; give coverage runs headroom instead of flaking on the
+  // default 30s.
+  timeout: process.env.COVERAGE === 'true' ? 90_000 : 30_000,
   reporter: 'list',
   use: {
     baseURL: process.env.BASE_URL ?? 'http://localhost:4173',

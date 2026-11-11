@@ -1,8 +1,8 @@
 {
   "extension": [".ts"],
   "require": ["ts-node/register"],
-  "include": ["src/**/*.ts", "features/step_definitions/**/*.ts"],
-  "exclude": ["src/**/*.test.ts", "**/*.d.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.stories.ts", "**/*.d.ts"],
   "sourceMap": true,
   "instrument": true,
   "all": false,

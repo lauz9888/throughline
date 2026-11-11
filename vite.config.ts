@@ -1,10 +1,25 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, type ViteUserConfig } from 'vitest/config';
 import { VitePWA } from 'vite-plugin-pwa';
 import { getBasePath } from './src/base-path';
 
-export default defineConfig({
+export default defineConfig(async (): Promise<ViteUserConfig> => ({
   base: getBasePath(process.env),
   plugins: [
+    // Coverage-only (never in `npm run build` or CD's base-path build): Istanbul-instrument
+    // src/ so the e2e leg of `test:coverage:merge` can read `window.__coverage__`. See
+    // docs/adr/0007-canonical-coverage-inventory-and-istanbul-e2e.md. The dynamic import keeps
+    // the dev dependency out of every other config load.
+    ...(process.env.COVERAGE === 'true'
+      ? [
+          (await import('vite-plugin-istanbul')).default({
+            include: 'src/*',
+            exclude: ['node_modules', 'src/**/*.test.ts', 'src/**/*.stories.ts'],
+            extension: ['.ts'],
+            requireEnv: false,
+            forceBuildInstrument: true,
+          }),
+        ]
+      : []),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -21,12 +36,10 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,woff2}'] },
     }),
   ],
-  build: {
-    sourcemap: process.env.COVERAGE === 'true',
-  },
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.ts'],
+    // tests/unit/ holds tests for the coverage tooling (scripts/lib, tests/e2e helpers).
+    include: ['src/**/*.test.ts', 'tests/unit/**/*.test.{ts,mjs}'],
     setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
@@ -46,4 +59,4 @@ export default defineConfig({
       exclude: ['src/**/*.test.ts', 'src/**/*.stories.ts'],
     },
   },
-});
+}));

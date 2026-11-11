@@ -28,6 +28,7 @@ module.exports = tseslint.config(
     files: [
       'features/**/*.ts',
       'tests/**/*.ts',
+      'tests/**/*.mjs',
       'scripts/**/*.mjs',
       'playwright.config.ts',
       'cucumber.cjs',

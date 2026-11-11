@@ -16,7 +16,7 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
 ## What you do
 
 1. Read `meta.json` for `started_at`; use the current time as the completion time. Compute total elapsed time (also as decimal hours, for the metrics block below), and state plainly that this spans human wait time too (approvals, manual testing, review turnaround, CI wait) — not just active engineering time — so it isn't misread as pure implementation effort.
-2. Read `state.md` for the branch, PR number, per-layer test file lists, `coverage-percent` (recorded by the orchestrator at Step 12), `cd-outcome` (recorded by the orchestrator right after Step 19's CD watch resolves — either `deployed` or `merged-deployment-failed`), and `bug-issues` — the exact list of issue numbers this run created.
+2. Read `state.md` for the branch, PR number, per-layer test file lists, `coverage-percent`, `branch-coverage-percent` and `coverage-investigations` (recorded by the orchestrator at Step 12), `cd-outcome` (recorded by the orchestrator right after Step 19's CD watch resolves — either `deployed` or `merged-deployment-failed`), and `bug-issues` — the exact list of issue numbers this run created.
 3. Fetch each issue in `bug-issues` **by number** — `gh issue view <number> --json number,title,state,labels,createdAt,closedAt,body,url` — not a `gh issue list --search`. A search is unbounded-result-limited by default (a run with more issues than the default page size would silently produce incomplete metrics) and matches on text, which is weaker than a direct lookup by an identifier you already have recorded (indexing lag, an unrelated issue coincidentally containing the same text, a wording change breaking the match). `bug-issues` is the authoritative source; don't fall back to searching if it's empty — an empty list means no bugs were raised this run, not that you should go looking for some.
 
    For each issue fetched, intersect its labels against the stage taxonomy — exactly one of `requirement`, `design`, `unit-test`, `bdd-test`, `e2e-test`, `storybook-test`, `qa`, `deploy-path`, `manual-test`, `ci`, `cd` — identifying _where in the pipeline it was caught_. `security` and `accessibility` are never the stage label: per the "Bug tracking"/"Accessibility" conventions in `SKILL.md`, every security/accessibility issue is always filed _with_ a stage label alongside it (e.g. `--label security --label qa`), so treat those two as **classification** labels layered on top, may be present on zero, one, or both, and never counted as a stage.
@@ -37,6 +37,8 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
      completed_at: <now, ISO 8601>
      total_hours: <decimal hours, e.g. 29.5>
      coverage_percent: <state.md's coverage-percent>
+     branch_coverage_percent: <state.md's branch-coverage-percent>
+     coverage_method: <the "Coverage method version" in .claude/STANDARDS.md at merge time, e.g. v2>
      storybook_story_count: <count of exported stories across all story files>
      storybook_interaction_test_count: <count of stories with an interaction/play function>
      storybook_a11y_pass_rate: <"<passed>/<total> stories" from the test:storybook run>
@@ -63,7 +65,7 @@ The path to `.workflow/<slug>/` (containing `requirements.md`, `design.md`, `sta
    - **Test changes** — the unit/BDD/e2e file lists from `state.md` (including `storybook-test-files`, when recorded), one line each on what they cover, noting which include an automated WCAG scan (`jest-axe`/`@axe-core/playwright`)
    - **Accessibility** — one line per UI-facing requirement in `requirements.md` on how it's covered (design decision + automated scan), and a short list of any issues carrying the `accessibility` label (from the grouped bug list below) with their resolution
    - **Bugs raised** — grouped by stage/label, each with opened/closed timestamps and resolution summary (from the issue body/close comment)
-   - **Coverage** — the combined coverage % from `state.md`
+   - **Coverage** — the combined statement and branch coverage % from `state.md`, the coverage method version, and any open coverage investigations (`state.md`'s `coverage-investigations`, fetched by number — one line each with its title and state; these are measurement questions, not defects, so they never go in `bugs_by_stage`)
    - **Outcome** — one line: whether this change is live (`deployed`) or merged but not currently live (`merged-deployment-failed`, with a pointer to the CD-failure issue if so)
    - **Time taken** — total, with the human-wait-time caveat above
 

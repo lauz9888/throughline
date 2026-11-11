@@ -99,7 +99,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npm run browsers:install
       - run: npm run test:e2e
         env:
           BASE_URL: ${{ needs.deploy.outputs.page_url }}
