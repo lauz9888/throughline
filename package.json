@@ -25,7 +25,7 @@
     "test:coverage:merge": "node scripts/merge-coverage.mjs"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.12.1",
+    "@axe-core/playwright": "^4.14.0",
     "@cucumber/cucumber": "^13.3.0",
     "@eslint/js": "^10.0.1",
     "@fontsource/playfair-display": "^5.1.1",
